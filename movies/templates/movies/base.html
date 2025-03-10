@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Stream - {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'movies:home' %}">Movie Stream</a>
+            <form class="d-flex" action="{% url 'movies:search' %}" method="GET">
+                <input class="form-control me-2" type="search" name="q" placeholder="Search movies...">
+                <button class="btn btn-outline-light" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+        {% endif %}
+        <div id="movies-container" class="row row-cols-1 row-cols-md-4 g-4">
+            <!-- Movies will be displayed here -->
+        </div>
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if debug %}
+    <script src="http://localhost:35729/livereload.js"></script>
+    {% endif %}
+    <script>
+        async function fetchMovies() {
+            try {
+                const response = await fetch('/api/movies/');
+                const data = await response.json();
+                displayMovies(data);
+            } catch (error) {
+                console.error('Error fetching movies:', error);
+            }
+        }
+
+        function displayMovies(movies) {
+            const container = document.getElementById('movies-container');
+            container.innerHTML = movies.map(movie => `
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="${movie.poster_url}" class="card-img-top" alt="${movie.title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${movie.title}</h5>
+                            <p class="card-text">${movie.description}</p>
+                            <a href="/movies/${movie.id}" class="btn btn-primary">Watch Now</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load movies when page loads
+        document.addEventListener('DOMContentLoaded', fetchMovies);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
