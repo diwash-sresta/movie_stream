@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieStream - {% block title %}{% endblock %}</title>
+    {% load static %}
+    {% load tailwind_tags %}
+    {% tailwind_css %}
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50 shadow-lg border-b border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a class="flex items-center space-x-2" href="{% url 'movies:home' %}">
+                        <span class="text-blue-500">
+                            <i class="fas fa-film text-2xl"></i>
+                        </span>
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                            MovieStream
+                        </span>
+                    </a>
+                    
+                    <!-- Desktop Menu -->
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <a href="{% url 'movies:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200" aria-current="page">Home</a>
+                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">Movies</a>
+                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">TV Shows</a>
+                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">My List</a>
+                    </div>
+                </div>
+                
+                <!-- Search Form -->
+                <div class="flex items-center">
+                    <form class="flex items-center" action="{% url 'movies:search' %}" method="GET">
+                        <div class="relative">
+                            <input 
+                                class="w-full md:w-64 rounded-full bg-gray-700/70 border border-gray-600 px-4 py-2 pl-10 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200" 
+                                type="search" 
+                                name="q" 
+                                placeholder="Search movies..."
+                            >
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                        <button class="ml-2 px-4 py-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 hidden md:block" type="submit">
+                            Search
+                        </button>
+                    </form>
+                    
+                    <!-- Mobile menu button -->
+                    <button type="button" class="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <!-- User Menu (Optional) -->
+                    <div class="hidden md:flex md:items-center md:ml-4">
+                        <a href="#" class="text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors duration-200">
+                            <i class="fas fa-user"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu (Hidden by default) -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="{% url 'movies:home' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium" aria-current="page">Home</a>
+                <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">Movies</a>
+                <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">TV Shows</a>
+                <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">My List</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% if error_message %}
+        <div class="bg-red-500 text-white p-4 rounded-lg mb-6 shadow-lg">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm">{{ error_message }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="flex items-center space-x-2">
+                    <span class="text-blue-500">
+                        <i class="fas fa-film"></i>
+                    </span>
+                    <span class="font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                        MovieStream
+                    </span>
+                </div>
+                <div class="text-sm text-gray-400">
+                    &copy; 2025 MovieStream. All rights reserved.
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {% if debug %}
+    <script src="http://localhost:35729/livereload.js"></script>
+    {% endif %}
+    
+    <!-- Mobile menu toggle script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.querySelector('button[aria-label="Open main menu"], button[aria-controls="mobile-menu"]');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (menuButton && mobileMenu) {
+                menuButton.addEventListener('click', function() {
+                    const expanded = this.getAttribute('aria-expanded') === 'true';
+                    this.setAttribute('aria-expanded', !expanded);
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

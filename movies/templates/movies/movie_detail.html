@@ -1,0 +1,243 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+<div class="movie-detail">
+    <!-- Movie Header -->
+    <div class="relative">
+        <!-- Backdrop Image -->
+        <div class="relative h-96 overflow-hidden rounded-xl">
+            {% if movie.backdrop_path %}
+            <div class="absolute inset-0">
+                <img src="https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}" 
+                     class="w-full h-full object-cover" 
+                     alt="{{ movie.title }} backdrop">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
+            </div>
+            {% else %}
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-900 to-purple-900"></div>
+            {% endif %}
+            
+            <!-- Movie Info Overlay -->
+            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div class="flex flex-col md:flex-row md:items-end gap-6">
+                    <!-- Poster -->
+                    <div class="flex-shrink-0 w-32 md:w-48 rounded-lg overflow-hidden shadow-2xl transform md:-translate-y-12">
+                        {% if movie.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                             class="w-full h-auto" 
+                             alt="{{ movie.title }} poster">
+                        {% else %}
+                        <div class="bg-gray-800 w-full aspect-[2/3] flex items-center justify-center">
+                            <i class="fas fa-film text-5xl text-gray-600"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Info -->
+                    <div class="flex-1">
+                        <h1 class="text-3xl md:text-4xl font-bold">{{ movie.title }}</h1>
+                        
+                        {% if movie.tagline %}
+                        <p class="text-gray-300 text-lg italic mb-2">{{ movie.tagline }}</p>
+                        {% endif %}
+                        
+                        <div class="flex flex-wrap items-center gap-3 mb-3">
+                            <!-- Year -->
+                            {% if movie.release_date %}
+                            <span class="text-gray-300">{{ movie.release_date|slice:":4" }}</span>
+                            {% endif %}
+                            
+                            <!-- Runtime -->
+                            {% if movie.runtime %}
+                            <span class="text-gray-300">{{ movie.runtime }} min</span>
+                            {% endif %}
+                            
+                            <!-- Rating -->
+                            {% if movie.vote_average %}
+                            <div class="flex items-center bg-black/50 px-2 py-1 rounded">
+                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                <span>{{ movie.vote_average|floatformat:1 }}/10</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Genres -->
+                        {% if movie.genres %}
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            {% for genre in movie.genres %}
+                            <span class="px-3 py-1 bg-gray-700 rounded-full text-xs">{{ genre.name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Actions -->
+                        <div class="flex flex-wrap gap-3 mt-4">
+                            <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium shadow">
+                                <i class="fas fa-play mr-2"></i>
+                                Watch Now
+                            </button>
+                            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add to List
+                            </button>
+                            <button class="inline-flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors text-sm">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Details Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <!-- Overview and Details -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Overview -->
+            <section>
+                <h2 class="text-2xl font-bold mb-4">Overview</h2>
+                <p class="text-gray-300">{{ movie.overview }}</p>
+            </section>
+            
+            <!-- Cast & Crew -->
+            {% if movie.credits.cast %}
+            <section>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Cast</h2>
+                    <a href="#" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {% for actor in movie.credits.cast|slice:":8" %}
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+                        <div class="aspect-[2/3] relative">
+                            {% if actor.profile_path %}
+                            <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
+                                 class="w-full h-full object-cover" 
+                                 alt="{{ actor.name }}"
+                                 loading="lazy">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-700">
+                                <i class="fas fa-user text-2xl text-gray-500"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <h4 class="font-bold truncate">{{ actor.name }}</h4>
+                            <p class="text-xs text-gray-400 truncate">{{ actor.character }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+            
+            <!-- Videos Section -->
+            {% if movie.videos.results %}
+            <section>
+                <h2 class="text-2xl font-bold mb-4">Videos</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for video in movie.videos.results|slice:":2" %}
+                    {% if video.site == 'YouTube' %}
+                    <div class="bg-gray-800 rounded-lg overflow-hidden">
+                        <div class="aspect-video">
+                            <iframe 
+                                src="https://www.youtube.com/embed/{{ video.key }}" 
+                                class="w-full h-full" 
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="p-3">
+                            <h4 class="font-medium truncate">{{ video.name }}</h4>
+                            <p class="text-xs text-gray-400">{{ video.type }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Movie Details -->
+            <div class="bg-gray-800 rounded-lg p-5">
+                <h3 class="text-lg font-bold mb-4">Movie Details</h3>
+                <div class="space-y-3">
+                    {% if movie.status %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Status</h4>
+                        <p>{{ movie.status }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.release_date %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Release Date</h4>
+                        <p>{{ movie.release_date }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.budget %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Budget</h4>
+                        <p>${{ movie.budget|floatformat:0|intcomma }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.revenue %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Revenue</h4>
+                        <p>${{ movie.revenue|floatformat:0|intcomma }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if movie.production_companies %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Production</h4>
+                        <p>{{ movie.production_companies|join:", " }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Similar Movies -->
+            {% if similar_movies %}
+            <div>
+                <h3 class="text-lg font-bold mb-4">Similar Movies</h3>
+                <div class="space-y-4">
+                    {% for movie in similar_movies|slice:":5" %}
+                    <a href="{% url 'movies:movie_detail' movie.id %}" class="flex bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors">
+                        <div class="w-16 flex-shrink-0">
+                            {% if movie.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w92{{ movie.poster_path }}" 
+                                 class="w-full h-full object-cover" 
+                                 alt="{{ movie.title }}"
+                                 loading="lazy">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-700 aspect-[2/3]">
+                                <i class="fas fa-film text-gray-500"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <h4 class="font-medium text-sm">{{ movie.title }}</h4>
+                            <p class="text-xs text-gray-400">{{ movie.release_date|slice:":4" }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

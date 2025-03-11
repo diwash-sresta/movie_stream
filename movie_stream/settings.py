@@ -13,10 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-from django.core.exceptions import ImproperlyConfigured
-
-# Load environment variables
 load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,12 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
-if not SECRET_KEY:
-    raise ImproperlyConfigured("The SECRET_KEY setting must not be empty.")
 
+SECRET_KEY='django-insecure-@4dqe-(p_3@ev(dvz7q-6swb9hj%1+@^7^pd5c$d^pmgo$9f#e'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '*']
 
@@ -50,6 +46,7 @@ INSTALLED_APPS = [
     'django_browser_reload',
     'movies',
     'rest_framework',
+    'django.contrib.humanize',
 ]
 
 TAILWIND_APP_NAME = "theme"
@@ -70,7 +67,7 @@ ROOT_URLCONF = 'movie_stream.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [ os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,7 +149,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-NPM_BIN_PATH = r"C:\Program Files\nodejs\npm.cmd"
+NPM_BIN_PATH = "/usr/bin/npm"
 
 # TMDB API Settings
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')

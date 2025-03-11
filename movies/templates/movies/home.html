@@ -1,54 +1,256 @@
-{% extends 'movies/base.html' %}
+{% extends 'layout.html' %}
+{% load static %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    {% if api_error %}
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
-            <strong class="font-bold">Error!</strong>
-            <span class="block sm:inline">Unable to fetch movie data. Please check your API configuration.</span>
+<!-- Hero Section -->
+<section class="relative overflow-hidden rounded-xl mb-12">
+    <div class="bg-gradient-to-r from-blue-900 to-purple-900 h-96 flex items-center">
+        <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl mb-6">
+                Unlimited <span class="text-blue-400">Movies</span> & <span class="text-blue-400">Shows</span>
+            </h1>
+            <p class="text-xl text-gray-300 mb-8">Stream the latest blockbusters and trending shows all in one place</p>
+            <a href="#trending-section" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors shadow-lg">
+                Explore Now
+                <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
-    {% endif %}
+        <!-- Background pattern -->
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute inset-0" style="background-image: url('{% static 'images/pattern.svg' %}'); background-size: cover;"></div>
+        </div>
+    </div>
+</section>
 
-    {% if trending_movies %}
-        <h2 class="mb-4">Trending Movies</h2>
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 mb-5">
-            {% for movie in trending_movies %}
-            <div class="col">
-                <div class="card h-100">
-                    {% if movie.poster_path %}
-                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ movie.title }}</h5>
-                        <p class="card-text">{{ movie.overview|truncatewords:30 }}</p>
-                        <a href="{% url 'movies:movie_detail' movie.id %}" class="btn btn-primary">View Details</a>
+<!-- Categories Tabs -->
+<section class="mb-10">
+    <div class="flex space-x-2 overflow-x-auto pb-2 mb-6 scroll-smooth scrollbar-hide">
+        <button class="px-6 py-2 bg-blue-600 text-white rounded-full whitespace-nowrap">All</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Action</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Comedy</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Drama</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Sci-Fi</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Horror</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Fantasy</button>
+        <button class="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full transition-colors whitespace-nowrap">Thriller</button>
+    </div>
+</section>
+
+<!-- Trending Movies Section -->
+<section id="trending-section" class="mb-16">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold flex items-center">
+            <i class="fas fa-fire text-red-500 mr-2"></i>
+            Trending Movies
+        </h2>
+        <a href="#" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
+            View All
+            <i class="fas fa-chevron-right ml-1 text-xs"></i>
+        </a>
+    </div>
+    
+    <div id="trending-movies" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {% for movie in trending_movies %}
+        <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+            <div class="relative aspect-[2/3] overflow-hidden">
+                {% if movie.poster_path %}
+                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                     class="movie-poster w-full h-full object-cover" 
+                     alt="{{ movie.title }}"
+                     loading="lazy">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
+                    <i class="fas fa-film text-3xl"></i>
+                </div>
+                {% endif %}
+                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="absolute bottom-0 left-0 right-0 p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
+                                <i class="fas fa-star mr-1"></i>
+                                {{ movie.vote_average|default:"N/A" }}
+                            </span>
+                            <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
+                                {{ movie.release_date|slice:":4"|default:"" }}
+                            </span>
+                        </div>
+                        <a href="{% url 'movies:movie_detail' movie.id %}" 
+                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
+                            <i class="fas fa-play mr-2"></i>
+                            Watch Now
+                        </a>
                     </div>
                 </div>
             </div>
-            {% endfor %}
+            <div class="p-4">
+                <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
+                <p class="text-xs text-gray-400 line-clamp-3">{{ movie.overview|truncatewords:20 }}</p>
+            </div>
         </div>
-    {% endif %}
+        {% empty %}
+        <div class="col-span-full py-8 text-center">
+            <i class="fas fa-film text-4xl text-gray-600 mb-3"></i>
+            <p class="text-gray-500">Loading trending movies...</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 
-    {% if popular_movies %}
-        <h2 class="mb-4">Popular Movies</h2>
-        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-            {% for movie in popular_movies %}
-            <div class="col">
-                <div class="card h-100">
-                    {% if movie.poster_path %}
-                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" class="card-img-top" alt="{{ movie.title }}">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ movie.title }}</h5>
-                        <p class="card-text">{{ movie.overview|truncatewords:30 }}</p>
-                        <a href="{% url 'movies:movie_detail' movie.id %}" class="btn btn-primary">View Details</a>
+<!-- Popular Movies Section -->
+<section>
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold flex items-center">
+            <i class="fas fa-thumbs-up text-blue-500 mr-2"></i>
+            Popular Movies
+        </h2>
+        <a href="#" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
+            View All
+            <i class="fas fa-chevron-right ml-1 text-xs"></i>
+        </a>
+    </div>
+    
+    <div id="popular-movies" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {% for movie in popular_movies %}
+        <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+            <div class="relative aspect-[2/3] overflow-hidden">
+                {% if movie.poster_path %}
+                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                     class="movie-poster w-full h-full object-cover" 
+                     alt="{{ movie.title }}"
+                     loading="lazy">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
+                    <i class="fas fa-film text-3xl"></i>
+                </div>
+                {% endif %}
+                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="absolute bottom-0 left-0 right-0 p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
+                                <i class="fas fa-star mr-1"></i>
+                                {{ movie.vote_average|default:"N/A" }}
+                            </span>
+                            <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
+                                {{ movie.release_date|slice:":4"|default:"" }}
+                            </span>
+                        </div>
+                        <a href="{% url 'movies:movie_detail' movie.id %}" 
+                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
+                            <i class="fas fa-play mr-2"></i>
+                            Watch Now
+                        </a>
                     </div>
                 </div>
             </div>
-            {% endfor %}
+            <div class="p-4">
+                <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
+                <p class="text-xs text-gray-400 line-clamp-3">{{ movie.overview|truncatewords:20 }}</p>
+            </div>
         </div>
-    {% endif %}
-</div>
+        {% empty %}
+        <div class="col-span-full py-8 text-center">
+            <i class="fas fa-film text-4xl text-gray-600 mb-3"></i>
+            <p class="text-gray-500">Loading popular movies...</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Only execute JavaScript if server-side rendering didn't provide data
+        if (document.querySelectorAll('#trending-movies .movie-card').length === 0 ||
+            document.querySelectorAll('#popular-movies .movie-card').length === 0) {
+            fetchMovies();
+        }
+    });
+
+    async function fetchMovies() {
+        const apiKey = '{{ settings.TMDB_API_KEY }}';  // Use Django template to pass the API key
+        const trendingUrl = `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=en-US`;
+        const popularUrl = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US`;
+
+        try {
+            // Fetch trending movies
+            const trendingResponse = await fetch(trendingUrl);
+            if (!trendingResponse.ok) {
+                throw new Error(`HTTP error! Status: ${trendingResponse.status}`);
+            }
+            const trendingData = await trendingResponse.json();
+            displayMovies(trendingData.results, 'trending-movies');
+
+            // Fetch popular movies
+            const popularResponse = await fetch(popularUrl);
+            if (!popularResponse.ok) {
+                throw new Error(`HTTP error! Status: ${popularResponse.status}`);
+            }
+            const popularData = await popularResponse.json();
+            displayMovies(popularData.results, 'popular-movies');
+        } catch (error) {
+            console.error('Error fetching movies:', error);
+            // Create error notification if not already present
+            if (!document.querySelector('.bg-red-500')) {
+                const errorNotification = document.createElement('div');
+                errorNotification.className = 'bg-red-500 bg-opacity-90 text-white p-4 rounded-lg mb-6 shadow-lg';
+                errorNotification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span>Unable to fetch movie data. Please check your API configuration.</span>
+                    </div>
+                `;
+                document.querySelector('main').prepend(errorNotification);
+            }
+        }
+    }
+
+    function displayMovies(movies, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error(`Element with ID "${containerId}" not found.`);
+            return;
+        }
+
+        container.innerHTML = movies.map(movie => `
+            <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
+                <div class="relative aspect-[2/3] overflow-hidden">
+                    ${movie.poster_path ? 
+                        `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
+                              class="movie-poster w-full h-full object-cover" 
+                              alt="${movie.title}"
+                              loading="lazy">` :
+                        `<div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
+                            <i class="fas fa-film text-3xl"></i>
+                         </div>`
+                    }
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="absolute bottom-0 left-0 right-0 p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    ${movie.vote_average || 'N/A'}
+                                </span>
+                                <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
+                                    ${movie.release_date ? movie.release_date.slice(0, 4) : ''}
+                                </span>
+                            </div>
+                            <a href="/movies/${movie.id}" 
+                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
+                                <i class="fas fa-play mr-2"></i>
+                                Watch Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <h3 class="font-bold text-base mb-1 truncate">${movie.title}</h3>
+                    <p class="text-xs text-gray-400 line-clamp-3">${movie.overview || 'No description available'}</p>
+                </div>
+            </div>
+        `).join('');
+    }
+</script>
 {% endblock %}
