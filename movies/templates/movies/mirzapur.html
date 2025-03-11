@@ -1,0 +1,131 @@
+{% extends 'movies/base.html' %}
+
+{% block title %}Mirzapur - Web Series{% endblock %}
+
+{% block content %}
+<div id="mirzapur-container" class="container mx-auto py-8">
+    <div id="loading" class="flex justify-center items-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+    </div>
+</div>
+
+<script>
+    async function fetchMirzapur() {
+        try {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.remove('hidden');
+            }
+            
+            const response = await fetch('/api/movies/mirzapur/');
+            if (!response.ok) {
+                throw new Error('Failed to fetch show data');
+            }
+            
+            const data = await response.json();
+            if (!data || Object.keys(data).length === 0) {
+                throw new Error('No show data available');
+            }
+
+            if (loading) {
+                loading.classList.add('hidden');
+            }
+            displayMirzapur(data);
+        } catch (error) {
+            console.error('Error:', error);
+            showError(error.message || 'Failed to load content');
+        }
+    }
+
+    function displayMirzapur(data) {
+        const container = document.getElementById('mirzapur-container');
+        container.innerHTML = `
+            <div class="space-y-8">
+                <!-- Hero Banner -->
+                <div class="relative h-[500px] rounded-2xl overflow-hidden">
+                    <img src="${data.banner_url}" class="w-full h-full object-cover" alt="${data.title}">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-8">
+                        <div class="max-w-7xl mx-auto">
+                            <h1 class="text-4xl md:text-5xl font-bold mb-4">${data.title}</h1>
+                            <div class="flex flex-wrap items-center gap-4 text-sm">
+                                <span class="px-3 py-1 bg-red-600 rounded-full">${data.rating}/10</span>
+                                <span>${data.release_year}</span>
+                                <span>${data.seasons} Seasons</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Main Content -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-gray-800 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold mb-4">Overview</h2>
+                            <p class="text-gray-300 mb-6">${data.description}</p>
+                            <div class="flex gap-4">
+                                <button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 4l12 6-12 6z"/>
+                                    </svg>
+                                    Watch Now
+                                </button>
+                                <button class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg">+ My List</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold mb-4">Episodes</h2>
+                            <div class="space-y-4">
+                                ${data.episodes.map(episode => `
+                                    <div class="bg-gray-700 p-4 rounded-lg hover:bg-gray-600 transition-colors">
+                                        <div class="flex justify-between items-start">
+                                            <h3 class="font-semibold">${episode.title}</h3>
+                                            <span class="text-sm text-gray-400">${episode.duration}</span>
+                                        </div>
+                                        <p class="text-gray-400 text-sm mt-2">${episode.description}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold mb-6">Cast</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            ${data.cast.map(actor => `
+                                <div class="flex items-center gap-3 p-2 bg-gray-700 rounded-lg">
+                                    <img src="${actor.image}" class="w-12 h-12 rounded-full object-cover" alt="${actor.name}">
+                                    <div>
+                                        <div class="font-semibold">${actor.name}</div>
+                                        <div class="text-sm text-gray-400">${actor.character}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function showError(message) {
+        const container = document.getElementById('mirzapur-container');
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center min-h-[300px] bg-gray-800 rounded-xl p-8">
+                <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <h2 class="text-xl font-bold text-red-500 mb-2">Error</h2>
+                <p class="text-gray-400 text-center">${message}</p>
+                <button onclick="fetchMirzapur()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchMirzapur);
+</script>
+{% endblock %}

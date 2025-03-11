@@ -1,0 +1,179 @@
+{% extends 'movies/base.html' %}
+
+{% block title %}3 Idiots (2009) - Movie{% endblock %}
+
+{% block content %}
+<div id="movie-container" class="container mx-auto py-8">
+    <div id="loading" class="flex justify-center items-center">
+        <div class="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+    </div>
+</div>
+
+<script>
+    async function fetchMovie() {
+        try {
+            const loading = document.getElementById('loading');
+            if (loading) {
+                loading.classList.remove('hidden');
+            }
+            
+            const response = await fetch('/api/movies/three-idiots/');
+            if (!response.ok) {
+                throw new Error('Failed to fetch movie data');
+            }
+            
+            const data = await response.json();
+            if (!data || Object.keys(data).length === 0) {
+                throw new Error('No movie data available');
+            }
+
+            if (loading) {
+                loading.classList.add('hidden');
+            }
+            displayMovie(data);
+        } catch (error) {
+            console.error('Error:', error);
+            showError(error.message || 'Failed to load movie content');
+        }
+    }
+
+    function displayMovie(data) {
+        const container = document.getElementById('movie-container');
+        container.innerHTML = `
+            <div class="space-y-8">
+                <!-- Hero Section -->
+                <div class="relative h-[600px] rounded-2xl overflow-hidden">
+                    <img src="${data.banner_url}" class="w-full h-full object-cover" alt="3 Idiots Banner">
+                    <div class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black to-transparent">
+                        <div class="max-w-7xl mx-auto">
+                            <h1 class="text-5xl font-bold mb-4">${data.title}</h1>
+                            <div class="flex flex-wrap items-center gap-4 mb-6">
+                                <span class="px-3 py-1 bg-yellow-500 text-black rounded-full font-semibold">${data.rating}/10</span>
+                                <span class="text-gray-300">${data.release_date}</span>
+                                <span class="text-gray-300">${data.runtime}</span>
+                                <span class="px-2 py-1 bg-gray-700 rounded-lg">${data.certification}</span>
+                            </div>
+                            <button class="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold flex items-center gap-2 transition-colors">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 4l12 6-12 6z"/>
+                                </svg>
+                                Play Trailer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Main Content -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <!-- Overview -->
+                        <div class="bg-gray-800 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold mb-4">Overview</h2>
+                            <p class="text-xl text-gray-300 mb-4">${data.tagline}</p>
+                            <p class="text-gray-400">${data.overview}</p>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                ${data.genres.map(genre => 
+                                    `<span class="px-3 py-1 bg-gray-700 rounded-full text-sm">${genre}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Cast -->
+                        <div class="bg-gray-800 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold mb-6">Top Billed Cast</h2>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                ${data.cast.map(person => `
+                                    <div class="bg-gray-700 rounded-lg overflow-hidden">
+                                        <img src="${person.image}" class="w-full aspect-[2/3] object-cover" alt="${person.name}">
+                                        <div class="p-3">
+                                            <h3 class="font-semibold">${person.name}</h3>
+                                            <p class="text-sm text-gray-400">${person.character}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Videos Section -->
+                        <div class="bg-gray-800 rounded-xl p-6 mt-8">
+                            <h2 class="text-2xl font-bold mb-6">Videos</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${data.videos.map(video => `
+                                    <div class="aspect-video">
+                                        <iframe 
+                                            class="w-full h-full rounded-lg"
+                                            src="https://www.youtube.com/embed/${video.key}"
+                                            title="${video.name}"
+                                            frameborder="0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Images Section -->
+                        <div class="bg-gray-800 rounded-xl p-6 mt-8">
+                            <h2 class="text-2xl font-bold mb-6">Media Gallery</h2>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                ${data.images.backdrops.map(url => `
+                                    <img src="${url}" 
+                                         class="rounded-lg w-full h-auto hover:opacity-75 transition-opacity cursor-pointer"
+                                         alt="Movie Scene">
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Movie Info -->
+                        <div class="bg-gray-800 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold mb-4">Movie Info</h2>
+                            <dl class="space-y-4">
+                                <div>
+                                    <dt class="text-gray-400">Status</dt>
+                                    <dd class="font-semibold">${data.status}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-gray-400">Original Language</dt>
+                                    <dd class="font-semibold">${data.original_language}</dd>
+                                </div>
+                            </dl>
+                        </div>
+
+                        <!-- Keywords -->
+                        <div class="bg-gray-800 rounded-xl p-6">
+                            <h2 class="text-2xl font-bold mb-4">Keywords</h2>
+                            <div class="flex flex-wrap gap-2">
+                                ${data.keywords.map(keyword => 
+                                    `<span class="px-3 py-1 bg-gray-700 rounded-full text-sm">${keyword}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function showError(message) {
+        const container = document.getElementById('movie-container');
+        container.innerHTML = `
+            <div class="flex flex-col items-center justify-center min-h-[300px] bg-gray-800 rounded-xl p-8">
+                <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <h2 class="text-xl font-bold text-red-500 mb-2">Error</h2>
+                <p class="text-gray-400 text-center">${message}</p>
+                <button onclick="fetchMovie()" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+
+    document.addEventListener('DOMContentLoaded', fetchMovie);
+</script>
+{% endblock %}
