@@ -80,6 +80,12 @@
                                 <i class="fas fa-play mr-2"></i>
                                 Watch Now
                             </button>
+                            {% if trailer_key %}
+                            <button id="play-trailer-btn" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md transition-colors text-sm font-medium shadow">
+                                <i class="fas fa-film mr-2"></i>
+                                Play Trailer
+                            </button>
+                            {% endif %}
                             <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium">
                                 <i class="fas fa-plus mr-2"></i>
                                 Add to List
@@ -240,4 +246,90 @@
         </div>
     </div>
 </div>
+
+<!-- Trailer Modal -->
+{% if trailer_key %}
+<div id="trailer-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/80" id="modal-overlay"></div>
+    <div class="relative z-10 bg-black rounded-lg overflow-hidden shadow-2xl" style="width: 90%; max-width: 800px;">
+        <!-- Fixed dimensions for the iframe container -->
+        <div style="padding-top: 56.25%;" class="relative">
+            <iframe 
+                id="trailer-iframe"
+                src="" 
+                class="absolute top-0 left-0 w-full h-full" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div>
+        <button id="close-modal" class="absolute -top-12 right-0 text-white hover:text-gray-300 p-2">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const trailerBtn = document.getElementById('play-trailer-btn');
+    const trailerModal = document.getElementById('trailer-modal');
+    const modalOverlay = document.getElementById('modal-overlay');
+    const closeModal = document.getElementById('close-modal');
+    const trailerIframe = document.getElementById('trailer-iframe');
+    const trailerKey = '{{ trailer_key }}';
+    
+    let isModalOpen = false;
+
+    function handleTrailerButtonClick(event) {
+        event.stopPropagation();
+        
+        // Set iframe source and show modal
+        trailerIframe.src = `https://www.youtube.com/embed/${trailerKey}?autoplay=1`;
+        trailerModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        isModalOpen = true;
+        
+        // Add a new history entry with a unique state
+        window.history.pushState({ isModal: true }, '', window.location.href);
+    }
+    
+    function handleCloseModal() {
+        if (!isModalOpen) return;
+        
+        trailerIframe.src = '';
+        trailerModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        isModalOpen = false;
+    }
+    
+    if (trailerBtn) {
+        const newButton = trailerBtn.cloneNode(true);
+        trailerBtn.parentNode.replaceChild(newButton, trailerBtn);
+        newButton.addEventListener('click', handleTrailerButtonClick, true);
+    }
+    
+    closeModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.history.back();
+    });
+    
+    modalOverlay.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.history.back();
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isModalOpen) {
+            e.preventDefault();
+            window.history.back();
+        }
+    });
+    
+    // Handle browser back/forward button
+    window.addEventListener('popstate', function(event) {
+        handleCloseModal();
+    });
+});
+</script>
+{% endif %}
 {% endblock %}
