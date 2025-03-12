@@ -3,6 +3,8 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
+from django.shortcuts import render
+import json
 
 import requests
 from requests.exceptions import RequestException
@@ -79,35 +81,27 @@ def get_movie_trailer(videos_data):
     
     return None
 
+
 def home(request):
-    """View for the home page"""
+    def get_movies(endpoint):
+        data = get_tmdb_data(endpoint)
+        return data['results'][:10] if data and 'results' in data else []
+
     context = {
-        'trending_movies': [],
-        'popular_movies': [],
-        'top_rated_movies': [],
-        'upcoming_movies': []
+        # Existing server-rendered data
+        'trending_movies': get_movies('trending/movie/week'),
+        'popular_movies': get_movies('movie/popular'),
+        'top_rated_movies': get_movies('movie/top_rated'),
+        'upcoming_movies': get_movies('movie/upcoming'),
+        
+        # JSON data for client-side filtering
+        'movies_json': json.dumps({
+            'trending': get_movies('trending/movie/week'),
+            'popular': get_movies('movie/popular'),
+            'topRated': get_movies('movie/top_rated'),
+            'upcoming': get_movies('movie/upcoming')
+        })
     }
-    
-    # Try to fetch trending movies
-    trending_data = get_tmdb_data('trending/movie/week')
-    if trending_data and 'results' in trending_data:
-        context['trending_movies'] = trending_data['results'][:10]
-    
-    # Try to fetch popular movies
-    popular_data = get_tmdb_data('movie/popular')
-    if popular_data and 'results' in popular_data:
-        context['popular_movies'] = popular_data['results'][:10]
-    
-    # Try to fetch top rated movies
-    top_rated_data = get_tmdb_data('movie/top_rated')
-    if top_rated_data and 'results' in top_rated_data:
-        context['top_rated_movies'] = top_rated_data['results'][:10]
-    
-    # Try to fetch upcoming movies
-    upcoming_data = get_tmdb_data('movie/upcoming')
-    if upcoming_data and 'results' in upcoming_data:
-        context['upcoming_movies'] = upcoming_data['results'][:10]
-    
     return render(request, 'movies/home.html', context)
 
 def movie_detail(request, movie_id):

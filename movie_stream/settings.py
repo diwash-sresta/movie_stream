@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'movies',
     'rest_framework',
     'django.contrib.humanize',
+    'livereload',
 ]
 
 TAILWIND_APP_NAME = "theme"
@@ -60,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    'livereload.middleware.LiveReloadScript',
 ]
 
 ROOT_URLCONF = 'movie_stream.urls'
@@ -133,8 +135,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+    os.path.join(BASE_DIR, 'static'),]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Create static directory if it doesn't exist
 STATIC_DIR = BASE_DIR / "static"
