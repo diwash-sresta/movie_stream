@@ -15,30 +15,27 @@
 </section>
 <section class="mb-10" x-data="{ activeGenre: 'all' }" x-init="$watch('activeGenre', value => window.filterMoviesByGenre(value))">
     <!-- Categories Tabs -->
-    
-        <div class="flex space-x-2 overflow-x-auto pb-2 mb-6 scroll-smooth scrollbar-hide">
-            <template x-for="genre in [
-                {id: 'all', name: 'All'},
-                {id: '28', name: 'Action'},
-                {id: '35', name: 'Comedy'},
-                {id: '18', name: 'Drama'},
-                {id: '878', name: 'Sci-Fi'},
-                {id: '27', name: 'Horror'},
-                {id: '14', name: 'Fantasy'},
-                {id: '53', name: 'Thriller'}
-            ]" :key="genre.id">
-                <button 
-                    @click="activeGenre = genre.id"
-                    class="px-6 py-2 rounded-full whitespace-nowrap transition-colors"
-                    :class="activeGenre === genre.id 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'">
-                    <span x-text="genre.name"></span>
-                </button>
-            </template>
-        </div>
-   
-   
+    <div class="flex space-x-2 overflow-x-auto pb-2 mb-6 scroll-smooth scrollbar-hide">
+        <template x-for="genre in [
+            {id: 'all', name: 'All'},
+            {id: '28', name: 'Action'},
+            {id: '35', name: 'Comedy'},
+            {id: '18', name: 'Drama'},
+            {id: '878', name: 'Sci-Fi'},
+            {id: '27', name: 'Horror'},
+            {id: '14', name: 'Fantasy'},
+            {id: '53', name: 'Thriller'}
+        ]" :key="genre.id">
+            <button 
+                @click="activeGenre = genre.id"
+                class="px-6 py-2 rounded-full whitespace-nowrap transition-colors"
+                :class="activeGenre === genre.id 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'">
+                <span x-text="genre.name"></span>
+            </button>
+        </template>
+    </div>
 </section>
 
 <!-- Trending Movies Section -->
@@ -56,41 +53,30 @@
     
     <div id="trending-movies" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {% for movie in trending_movies %}
-        <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-            <div class="relative aspect-[2/3] overflow-hidden">
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <a href="{% url 'movies:movie_detail' movie.id %}">
                 {% if movie.poster_path %}
                 <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
-                     class="movie-poster w-full h-full object-cover" 
-                     alt="{{ movie.title }}"
+                     alt="{{ movie.title }}" 
+                     class="w-full h-auto aspect-[2/3] object-cover"
                      loading="lazy">
                 {% else %}
-                <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
-                    <i class="fas fa-film text-3xl"></i>
+                <div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-film text-4xl text-gray-500"></i>
                 </div>
                 {% endif %}
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div class="absolute bottom-0 left-0 right-0 p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
-                                <i class="fas fa-star mr-1"></i>
-                                {{ movie.vote_average|default:"N/A" }}
-                            </span>
-                            <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
-                                {{ movie.release_date|slice:":4"|default:"" }}
-                            </span>
-                        </div>
-                        <a href="{% url 'movies:movie_detail' movie.id %}" 
-                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
-                            <i class="fas fa-play mr-2"></i>
-                            Watch Now
-                        </a>
+                <div class="p-3">
+                    <h3 class="font-medium text-sm truncate">{{ movie.title }}</h3>
+                    <div class="flex items-center text-xs text-gray-400 mt-1">
+                        <span class="flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ movie.vote_average|floatformat:1|default:"N/A" }}
+                        </span>
+                        <span class="mx-2">•</span>
+                        <span>{{ movie.release_date|slice:":4"|default:"" }}</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-4">
-                <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
-                <p class="text-xs text-gray-400 line-clamp-3">{{ movie.overview|truncatewords:20 }}</p>
-            </div>
+            </a>
         </div>
         {% empty %}
         <div class="col-span-full py-8 text-center">
@@ -102,7 +88,7 @@
 </section>
 
 <!-- Popular Movies Section -->
-<section>
+<section class="mb-16">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold flex items-center">
             <i class="fas fa-thumbs-up text-blue-500 mr-2"></i>
@@ -116,41 +102,30 @@
     
     <div id="popular-movies" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {% for movie in popular_movies %}
-        <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-            <div class="relative aspect-[2/3] overflow-hidden">
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <a href="{% url 'movies:movie_detail' movie.id %}">
                 {% if movie.poster_path %}
                 <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
-                     class="movie-poster w-full h-full object-cover" 
-                     alt="{{ movie.title }}"
+                     alt="{{ movie.title }}" 
+                     class="w-full h-auto aspect-[2/3] object-cover"
                      loading="lazy">
                 {% else %}
-                <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
-                    <i class="fas fa-film text-3xl"></i>
+                <div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-film text-4xl text-gray-500"></i>
                 </div>
                 {% endif %}
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div class="absolute bottom-0 left-0 right-0 p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
-                                <i class="fas fa-star mr-1"></i>
-                                {{ movie.vote_average|default:"N/A" }}
-                            </span>
-                            <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
-                                {{ movie.release_date|slice:":4"|default:"" }}
-                            </span>
-                        </div>
-                        <a href="{% url 'movies:movie_detail' movie.id %}" 
-                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
-                            <i class="fas fa-play mr-2"></i>
-                            Watch Now
-                        </a>
+                <div class="p-3">
+                    <h3 class="font-medium text-sm truncate">{{ movie.title }}</h3>
+                    <div class="flex items-center text-xs text-gray-400 mt-1">
+                        <span class="flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ movie.vote_average|floatformat:1|default:"N/A" }}
+                        </span>
+                        <span class="mx-2">•</span>
+                        <span>{{ movie.release_date|slice:":4"|default:"" }}</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-4">
-                <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
-                <p class="text-xs text-gray-400 line-clamp-3">{{ movie.overview|truncatewords:20 }}</p>
-            </div>
+            </a>
         </div>
         {% empty %}
         <div class="col-span-full py-8 text-center">
@@ -176,41 +151,30 @@
     
     <div id="topRated-movies" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {% for movie in top_rated_movies %}
-        <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-            <div class="relative aspect-[2/3] overflow-hidden">
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <a href="{% url 'movies:movie_detail' movie.id %}">
                 {% if movie.poster_path %}
                 <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
-                     class="movie-poster w-full h-full object-cover" 
-                     alt="{{ movie.title }}"
+                     alt="{{ movie.title }}" 
+                     class="w-full h-auto aspect-[2/3] object-cover"
                      loading="lazy">
                 {% else %}
-                <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
-                    <i class="fas fa-film text-3xl"></i>
+                <div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-film text-4xl text-gray-500"></i>
                 </div>
                 {% endif %}
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div class="absolute bottom-0 left-0 right-0 p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
-                                <i class="fas fa-star mr-1"></i>
-                                {{ movie.vote_average|default:"N/A" }}
-                            </span>
-                            <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
-                                {{ movie.release_date|slice:":4"|default:"" }}
-                            </span>
-                        </div>
-                        <a href="{% url 'movies:movie_detail' movie.id %}" 
-                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
-                            <i class="fas fa-play mr-2"></i>
-                            Watch Now
-                        </a>
+                <div class="p-3">
+                    <h3 class="font-medium text-sm truncate">{{ movie.title }}</h3>
+                    <div class="flex items-center text-xs text-gray-400 mt-1">
+                        <span class="flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ movie.vote_average|floatformat:1|default:"N/A" }}
+                        </span>
+                        <span class="mx-2">•</span>
+                        <span>{{ movie.release_date|slice:":4"|default:"" }}</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-4">
-                <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
-                <p class="text-xs text-gray-400 line-clamp-3">{{ movie.overview|truncatewords:20 }}</p>
-            </div>
+            </a>
         </div>
         {% empty %}
         <div class="col-span-full py-8 text-center">
@@ -236,41 +200,30 @@
     
     <div id="upcoming-movies" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {% for movie in upcoming_movies %}
-        <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-            <div class="relative aspect-[2/3] overflow-hidden">
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <a href="{% url 'movies:movie_detail' movie.id %}">
                 {% if movie.poster_path %}
                 <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
-                     class="movie-poster w-full h-full object-cover" 
-                     alt="{{ movie.title }}"
+                     alt="{{ movie.title }}" 
+                     class="w-full h-auto aspect-[2/3] object-cover"
                      loading="lazy">
                 {% else %}
-                <div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
-                    <i class="fas fa-film text-3xl"></i>
+                <div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-film text-4xl text-gray-500"></i>
                 </div>
                 {% endif %}
-                <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div class="absolute bottom-0 left-0 right-0 p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
-                                <i class="fas fa-star mr-1"></i>
-                                {{ movie.vote_average|default:"N/A" }}
-                            </span>
-                            <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
-                                {{ movie.release_date|slice:":4"|default:"" }}
-                            </span>
-                        </div>
-                        <a href="{% url 'movies:movie_detail' movie.id %}" 
-                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
-                            <i class="fas fa-play mr-2"></i>
-                            Watch Now
-                        </a>
+                <div class="p-3">
+                    <h3 class="font-medium text-sm truncate">{{ movie.title }}</h3>
+                    <div class="flex items-center text-xs text-gray-400 mt-1">
+                        <span class="flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ movie.vote_average|floatformat:1|default:"N/A" }}
+                        </span>
+                        <span class="mx-2">•</span>
+                        <span>{{ movie.release_date|slice:":4"|default:"" }}</span>
                     </div>
                 </div>
-            </div>
-            <div class="p-4">
-                <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
-                <p class="text-xs text-gray-400 line-clamp-3">{{ movie.overview|truncatewords:20 }}</p>
-            </div>
+            </a>
         </div>
         {% empty %}
         <div class="col-span-full py-8 text-center">
@@ -307,40 +260,29 @@
         if (!container) return;
 
         container.innerHTML = movies.map(movie => `
-            <div class="movie-card group bg-gray-800 rounded-lg overflow-hidden shadow-lg">
-                <div class="relative aspect-[2/3] overflow-hidden">
+            <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+                <a href="/movies/${movie.id}">
                     ${movie.poster_path ? 
                         `<img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" 
-                              class="movie-poster w-full h-full object-cover" 
-                              alt="${movie.title}"
+                              alt="${movie.title}" 
+                              class="w-full h-auto aspect-[2/3] object-cover"
                               loading="lazy">` :
-                        `<div class="w-full h-full flex items-center justify-center bg-gray-700 text-gray-500">
-                            <i class="fas fa-film text-3xl"></i>
+                        `<div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                            <i class="fas fa-film text-4xl text-gray-500"></i>
                          </div>`
                     }
-                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div class="absolute bottom-0 left-0 right-0 p-4">
-                            <div class="flex items-center space-x-2 mb-2">
-                                <span class="bg-black bg-opacity-70 text-yellow-400 text-xs font-bold px-2 py-1 rounded flex items-center">
-                                    <i class="fas fa-star mr-1"></i>
-                                    ${movie.vote_average || 'N/A'}
-                                </span>
-                                <span class="bg-black bg-opacity-70 text-gray-300 text-xs px-2 py-1 rounded">
-                                    ${movie.release_date ? movie.release_date.slice(0, 4) : ''}
-                                </span>
-                            </div>
-                            <a href="/movies/${movie.id}" 
-                               class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium">
-                                <i class="fas fa-play mr-2"></i>
-                                Watch Now
-                            </a>
+                    <div class="p-3">
+                        <h3 class="font-medium text-sm truncate">${movie.title}</h3>
+                        <div class="flex items-center text-xs text-gray-400 mt-1">
+                            <span class="flex items-center">
+                                <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                ${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}
+                            </span>
+                            <span class="mx-2">•</span>
+                            <span>${movie.release_date ? movie.release_date.slice(0, 4) : ''}</span>
                         </div>
                     </div>
-                </div>
-                <div class="p-4">
-                    <h3 class="font-bold text-base mb-1 truncate">${movie.title}</h3>
-                    <p class="text-xs text-gray-400 line-clamp-3">${movie.overview || 'No description available'}</p>
-                </div>
+                </a>
             </div>
         `).join('');
     }

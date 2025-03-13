@@ -1,0 +1,78 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Similar Movies to {{ movie.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-2">Movies Similar to "{{ movie.title }}"</h1>
+        {% if total_results %}
+        <p class="text-gray-400">{{ total_results }} similar movies found</p>
+        {% endif %}
+    </div>
+
+    {% if error_message %}
+    <div class="bg-red-500/10 border border-red-500 text-red-400 p-4 rounded-lg">
+        <p>{{ error_message }}</p>
+    </div>
+    {% else %}
+    <!-- Movies Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {% for movie in similar_movies %}
+        <div class="movie-card bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <a href="{% url 'movies:movie_detail' movie.id %}">
+                <div class="relative aspect-[2/3] overflow-hidden">
+                    {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}"
+                         class="w-full h-full object-cover"
+                         alt="{{ movie.title }}"
+                         loading="lazy">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center bg-gray-700">
+                        <i class="fas fa-film text-3xl text-gray-500"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="p-4">
+                    <h3 class="font-bold text-base mb-1 truncate">{{ movie.title }}</h3>
+                    <div class="flex items-center text-sm text-gray-400">
+                        <span class="flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ movie.vote_average|floatformat:1 }}
+                        </span>
+                        <span class="mx-2">•</span>
+                        <span>{{ movie.release_date|slice:":4" }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500">No similar movies found</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center mt-8 space-x-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">
+            Previous
+        </a>
+        {% endif %}
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">
+            Next
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

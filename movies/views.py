@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render,redirect, get_object_or_404
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -9,6 +9,12 @@ import json
 import requests
 from requests.exceptions import RequestException
 import logging
+# from django.contrib.auth import login
+# from .models import  Profile
+# from django.contrib.auth.models import User
+# from urllib.parse import urlencode
+# from .forms import CustomSignUpForm 
+
 
 logger = logging.getLogger(__name__)
 
@@ -320,6 +326,41 @@ def search(request):
             'results': [],
             'error_message': 'An error occurred while searching. Please try again.'
         })
+    
+def similar_movies(request, movie_id):
+    """View for displaying similar movies"""
+    try:
+        # Get similar movies from TMDB API
+        similar_data = get_tmdb_data(f'movie/{movie_id}/similar')
+        
+        if not similar_data:
+            raise Exception('Failed to fetch similar movies')
+        
+        # Get the original movie details for context
+        movie_data = get_tmdb_data(f'movie/{movie_id}')
+        
+        if not movie_data:
+            raise Exception('Failed to fetch movie details')
+        
+        # Set up pagination
+        page = request.GET.get('page', 1)
+        paginator = Paginator(similar_data.get('results', []), 20)  # 20 movies per page
+        similar_movies = paginator.get_page(page)
+        
+        context = {
+            'movie': movie_data,
+            'similar_movies': similar_movies,
+            'page_obj': similar_movies,
+            'total_results': similar_data.get('total_results', 0)
+        }
+        
+        return render(request, 'movies/similar_movies.html', context)
+        
+    except Exception as e:
+        logger.error(f"Error fetching similar movies: {str(e)}")
+        return render(request, 'movies/similar_movies.html', {
+            'error_message': 'Unable to fetch similar movies. Please try again later.'
+        })
 
 @require_http_methods(["GET"])
 def get_movies_api(request, list_type):
@@ -343,3 +384,76 @@ def get_movies_api(request, list_type):
         return JsonResponse({'error': 'Failed to fetch data from TMDB'}, status=503)
     
     return JsonResponse(data)
+
+# def signup(request):
+#     if request.method == 'POST':
+#         form = CustomSignUpForm(request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             login(request, user)
+#             messages.success(request, 'Welcome to Expense Tracker!')
+#             return redirect('trackense:expense_list')
+#     else:
+#         form = CustomSignUpForm()
+#     return render(request, 'registration/signup.html', {'form': form})
+
+# def google_login(request):
+#     """Redirect users to Google's OAuth consent screen."""
+#     params = {
+#         'client_id': settings.GOOGLE_CLIENT_ID,
+#         'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+#         'response_type': 'code',
+#         'scope': 'openid email profile',
+#         'access_type': 'offline',
+#         'prompt': 'select_account',
+#     }
+#     auth_url = f"{settings.GOOGLE_AUTH_URL}?{urlencode(params)}"
+#     return redirect(auth_url)
+
+# def google_callback(request):
+#     """Handle the callback from Google OAuth."""
+#     code = request.GET.get('code')
+#     if not code:
+#         return redirect('login')  # Redirect to login if no code is provided
+
+#     # Exchange the authorization code for an access token
+#     token_data = {
+#         'code': code,
+#         'client_id': settings.GOOGLE_CLIENT_ID,
+#         'client_secret': settings.GOOGLE_CLIENT_SECRET,
+#         'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+#         'grant_type': 'authorization_code',
+#     }
+#     response = requests.post(settings.GOOGLE_TOKEN_URL, data=token_data)
+#     if response.status_code != 200:
+#         return redirect('login')  # Handle error
+
+#     access_token = response.json().get('access_token')
+
+#     # Fetch user info using the access token
+#     user_info_response = requests.get(settings.GOOGLE_USER_INFO_URL, headers={
+#         'Authorization': f'Bearer {access_token}'
+#     })
+#     if user_info_response.status_code != 200:
+#         return redirect('login')  # Handle error
+
+#     user_info = user_info_response.json()
+#     email = user_info.get('email')
+#     first_name = user_info.get('given_name', '')
+#     last_name = user_info.get('family_name', '')
+#     google_profile_picture = user_info.get('picture', '')  # Get the Google profile picture URL
+
+#     # Create or get the user
+#     user, created = User.objects.get_or_create(
+#         username=email,
+#         defaults={'email': email, 'first_name': first_name, 'last_name': last_name}
+#     )
+
+#     # Update or create the user's profile with the Google profile picture
+#     profile, profile_created = Profile.objects.get_or_create(user=user)
+#     profile.google_profile_picture = google_profile_picture
+#     profile.save()
+
+#     # Log the user in with the specified backend
+#     login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+#     return redirect('trackense:dashboard') 

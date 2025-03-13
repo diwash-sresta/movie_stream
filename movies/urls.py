@@ -12,6 +12,9 @@ urlpatterns = [
     path('tv/<int:tv_id>/', views.tv_detail, name='tv_detail'),
     path('tv/<int:tv_id>/season/<int:season_number>/', views.season_detail, name='season_detail'),
     path('search/', views.search, name='search'),
+    path('movies/<int:movie_id>/similar/', views.similar_movies, name='similar_movies'),
+    # path('signup/', views.signup, name='signup'),
+
     
     # API endpoints for JavaScript usage
     path('api/movies/<str:list_type>/', views.get_movies_api, name='get_movies_api'),

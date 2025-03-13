@@ -6,36 +6,63 @@
 
 {% block content %}
 <div class="max-w-6xl mx-auto px-6 py-8">
-    <!-- Season Header -->
-    <div class="relative bg-gray-900 text-white rounded-lg shadow-lg overflow-hidden">
+    <!-- Enhanced Cinematic Hero Section -->
+    <div class="relative bg-gray-900 text-white rounded-lg shadow-xl overflow-hidden">
         {% if season.poster_path %}
-        <div class="relative w-full h-80 sm:h-96">
+        <div class="relative w-full h-96 sm:h-[500px]">
+            <!-- Main background image -->
             <img src="https://image.tmdb.org/t/p/original{{ season.poster_path }}" 
-                 class="w-full h-full object-cover opacity-75" 
+                 class="w-full h-full object-cover opacity-60" 
                  alt="{{ season.name }}">
-            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
+            
+            <!-- Gradient overlay for text readability -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
+            
+            <!-- Floating poster image (smaller on mobile, larger on desktop) -->
+            <div class="absolute bottom-6 left-6 hidden md:block">
+                <img src="https://image.tmdb.org/t/p/w342{{ season.poster_path }}" 
+                     class="w-32 h-48 sm:w-48 sm:h-72 object-cover rounded-lg shadow-2xl border-2 border-gray-700" 
+                     alt="{{ season.name }} Poster">
+            </div>
         </div>
         {% else %}
-        <div class="w-full h-80 bg-gray-800 flex items-center justify-center">
+        <div class="w-full h-96 bg-gray-800 flex items-center justify-center">
             <i class="fas fa-tv text-6xl text-gray-500"></i>
         </div>
         {% endif %}
         
-        <!-- Season Info -->
-        <div class="absolute bottom-6 left-6 right-6">
-            <h1 class="text-4xl font-bold">{{ season.name }}</h1>
-            <div class="mt-2 text-gray-300 text-lg">
-                <span>Season {{ season.season_number }}</span> • 
+        <!-- Season Info (positioned differently based on screen size) -->
+        <div class="absolute bottom-6 right-6 left-6 md:left-64 lg:left-72">
+            <h1 class="text-4xl sm:text-5xl font-bold tracking-tight">{{ season.name }}</h1>
+            <div class="mt-2 text-gray-300 text-lg flex flex-wrap items-center gap-y-1">
+                <span class="font-semibold">Season {{ season.season_number }}</span>
+                <span class="mx-2">•</span>
                 <span>{{ season.episode_count }} Episodes</span> 
-                {% if season.air_date %} • <span>Aired: {{ season.air_date }}</span>{% endif %}
+                {% if season.air_date %}
+                <span class="mx-2">•</span>
+                <span>{{ season.air_date }}</span>
+                {% endif %}
             </div>
+            
             {% if season.overview %}
-            <p class="mt-3 text-gray-200 text-sm sm:text-base max-w-3xl">{{ season.overview }}</p>
+            <p class="mt-4 text-gray-200 text-sm sm:text-base max-w-3xl">{{ season.overview }}</p>
             {% endif %}
+            
+            <!-- Action buttons -->
+            <div class="mt-6 flex flex-wrap gap-3">
+                <button class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-md font-semibold transition-colors">
+                    <i class="fas fa-play"></i>
+                    <span>Play First Episode</span>
+                </button>
+                <button class="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-6 py-3 rounded-md font-semibold transition-colors">
+                    <i class="fas fa-plus"></i>
+                    <span>Add to Watchlist</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Episodes Section -->
+    <!-- Episodes Section (unchanged) -->
     {% if season.episodes %}
     <section id="episodes-section" class="mt-10">
         <h2 class="text-2xl font-bold mb-6 text-gray-200">Episodes</h2>

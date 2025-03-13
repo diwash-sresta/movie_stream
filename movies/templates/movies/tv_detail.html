@@ -6,26 +6,27 @@
 
 {% block content %}
 <div class="movie-detail">
-    <!-- TV Show Header -->
+    <!-- Enhanced Cinematic Hero Section -->
     <div class="relative">
-        <!-- Backdrop Image -->
-        <div class="relative h-96 overflow-hidden rounded-xl">
+        <!-- Backdrop Image with Parallax Effect -->
+        <div class="relative h-[60vh] md:h-[70vh] overflow-hidden rounded-xl group">
             {% if show.backdrop_path %}
-            <div class="absolute inset-0">
+            <div class="absolute inset-0 transform scale-110 transition-transform duration-10000 hover:scale-105">
                 <img src="https://image.tmdb.org/t/p/original{{ show.backdrop_path }}" 
-                     class="w-full h-full object-cover" 
+                     class="w-full h-full object-cover blur-sm scale-105 group-hover:blur-none group-hover:scale-100 transition-all duration-1000" 
                      alt="{{ show.name }} backdrop">
-                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent"></div>
             </div>
             {% else %}
             <div class="absolute inset-0 bg-gradient-to-r from-blue-900 to-purple-900"></div>
             {% endif %}
             
-            <!-- TV Show Info Overlay -->
-            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <!-- TV Show Info Overlay with Animated Entry -->
+            <div class="absolute bottom-0 left-0 right-0 p-6 md:p-12 text-white">
                 <div class="flex flex-col md:flex-row md:items-end gap-6">
-                    <!-- Poster -->
-                    <div class="flex-shrink-0 w-32 md:w-48 rounded-lg overflow-hidden shadow-2xl transform md:-translate-y-12">
+                    <!-- Poster with Hover Effect -->
+                    <div class="flex-shrink-0 w-32 md:w-56 rounded-lg overflow-hidden shadow-2xl transform md:-translate-y-16 
+                                transition-all duration-500 hover:shadow-blue-500/50 hover:-translate-y-20 group-hover:scale-105">
                         {% if show.poster_path %}
                         <img src="https://image.tmdb.org/t/p/w500{{ show.poster_path }}" 
                              class="w-full h-auto" 
@@ -37,18 +38,20 @@
                         {% endif %}
                     </div>
                     
-                    <!-- Info -->
-                    <div class="flex-1">
-                        <h1 class="text-3xl md:text-4xl font-bold">{{ show.name }}</h1>
+                    <!-- Enhanced Info Section -->
+                    <div class="flex-1 transform translate-y-0 transition-all duration-700 group-hover:translate-y-[-10px]">
+                        <h1 class="text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">
+                            {{ show.name }}
+                        </h1>
                         
                         {% if show.tagline %}
-                        <p class="text-gray-300 text-lg italic mb-2">{{ show.tagline }}</p>
+                        <p class="text-gray-300 text-lg italic mb-3">{{ show.tagline }}</p>
                         {% endif %}
                         
-                        <div class="flex flex-wrap items-center gap-3 mb-3">
-                            <!-- Year -->
+                        <div class="flex flex-wrap items-center gap-3 mb-4">
+                            <!-- Year with Glow Effect -->
                             {% if show.first_air_date %}
-                            <span class="text-gray-300">{{ show.first_air_date|slice:":4" }}</span>
+                            <span class="text-gray-300 shadow-glow">{{ show.first_air_date|slice:":4" }}</span>
                             {% endif %}
                             
                             <!-- Number of Seasons -->
@@ -56,35 +59,44 @@
                             <span class="text-gray-300">{{ show.number_of_seasons }} season{{ show.number_of_seasons|pluralize }}</span>
                             {% endif %}
                             
-                            <!-- Rating -->
+                            <!-- Enhanced Rating Badge -->
                             {% if show.vote_average %}
-                            <div class="flex items-center bg-black/50 px-2 py-1 rounded">
+                            <div class="flex items-center bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full border border-yellow-500/30">
                                 <i class="fas fa-star text-yellow-400 mr-1"></i>
                                 <span>{{ show.vote_average|floatformat:1 }}/10</span>
                             </div>
                             {% endif %}
                         </div>
 
-                        <!-- Genres -->
+                        <!-- Animated Genres -->
                         {% if show.genres %}
-                        <div class="flex flex-wrap gap-2 mb-4">
+                        <div class="flex flex-wrap gap-2 mb-5">
                             {% for genre in show.genres %}
-                            <span class="px-3 py-1 bg-gray-700 rounded-full text-xs">{{ genre.name }}</span>
+                            <span class="px-3 py-1 bg-gray-700/80 backdrop-blur-sm rounded-full text-xs border border-gray-600 
+                                       transition-all duration-300 hover:bg-blue-700/70 hover:scale-105 hover:border-blue-500">
+                                {{ genre.name }}
+                            </span>
                             {% endfor %}
                         </div>
                         {% endif %}
                         
-                        <!-- Actions -->
-                        <div class="flex flex-wrap gap-3 mt-4">
-                            <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium shadow">
-                                <i class="fas fa-play mr-2"></i>
+                        <!-- Modern Action Buttons -->
+                        <div class="flex flex-wrap gap-4 mt-6">
+                            <button class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-full 
+                                          transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-blue-500/50 
+                                          transform hover:-translate-y-1 group">
+                                <i class="fas fa-play mr-2 transform group-hover:scale-110 transition-transform"></i>
                                 Watch Now
                             </button>
-                            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium">
+                            <button class="inline-flex items-center px-6 py-3 bg-gray-800/80 hover:bg-gray-700 backdrop-blur-sm 
+                                          rounded-full border border-gray-700 transition-all duration-300 text-sm font-medium 
+                                          hover:border-gray-500 transform hover:-translate-y-1">
                                 <i class="fas fa-plus mr-2"></i>
                                 Add to List
                             </button>
-                            <button class="inline-flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors text-sm">
+                            <button class="inline-flex items-center p-3 bg-gray-800/80 hover:bg-gray-700 backdrop-blur-sm 
+                                          rounded-full border border-gray-700 transition-colors text-sm 
+                                          hover:border-gray-500 transform hover:rotate-12 transition-all duration-300">
                                 <i class="fas fa-share-alt"></i>
                             </button>
                         </div>
@@ -98,220 +110,178 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <!-- Overview and Details -->
         <div class="lg:col-span-2 space-y-8">
-            <!-- Overview -->
+            <!-- Overview with Animated Entry -->
             {% if show.overview %}
-            <section>
-                <h2 class="text-2xl font-bold mb-4">Overview</h2>
-                <p class="text-gray-300">{{ show.overview }}</p>
+            <section class="transform transition-all duration-700 hover:translate-x-2">
+                <h2 class="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">Overview</h2>
+                <p class="text-gray-300 leading-relaxed">{{ show.overview }}</p>
             </section>
             {% endif %}
             
-            <!-- Seasons Section -->
+            <!-- Netflix-Style Horizontal Scroll for Seasons -->
             {% if show.seasons %}
             <section id="seasons-section">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">Seasons</h2>
-                    {% if show.seasons|length > 3 %}
-                    <a href="#" id="view-all-seasons" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
-                    {% endif %}
+                    <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">Seasons</h2>
+                    <button id="view-all-seasons" class="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+                        View All
+                    </button>
                 </div>
                 
-                <div class="space-y-4" id="seasons-container">
-                    {% for season in show.seasons|slice:":3" %}
-                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow season-item">
-                        <div class="flex flex-col sm:flex-row">
-                            <div class="w-full sm:w-48 flex-shrink-0">
-                                {% if season.poster_path %}
-                                <img src="https://image.tmdb.org/t/p/w300{{ season.poster_path }}" 
-                                     alt="Season {{ season.season_number }}" 
-                                     class="w-full h-auto object-cover"
-                                     loading="lazy">
-                                {% else %}
-                                <div class="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
-                                    <i class="fas fa-tv text-4xl text-gray-500"></i>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="p-4 flex-1">
-                                <h3 class="font-bold text-lg">{{ season.name }}</h3>
-                                <div class="text-sm text-gray-400 mt-1">
-                                    {% if season.air_date %}
-                                    <span>{{ season.air_date|slice:":4" }}</span>
-                                    <span class="mx-2">•</span>
+                <!-- Horizontal Scrolling Container -->
+                <div class="relative group">
+                    <!-- Navigation Arrows -->
+                    <button id="seasons-prev" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black/70 text-white p-3 rounded-full z-10 
+                                            opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed 
+                                            hover:bg-blue-600 -ml-4">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <button id="seasons-next" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black/70 text-white p-3 rounded-full z-10 
+                                            opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed 
+                                            hover:bg-blue-600 -mr-4">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Scrollable Container -->
+                    <div class="seasons-scroll overflow-x-auto pb-6 hide-scrollbar" style="scroll-behavior: smooth;">
+                        <div class="seasons-inner-container inline-flex gap-4 min-w-max">
+                            {% for season in show.seasons %}
+                            <a href="{% url 'movies:season_detail' show.id season.season_number %}" 
+                               class="season-item w-72 flex-shrink-0 bg-gray-800 rounded-lg overflow-hidden shadow 
+                                      transform transition-all duration-300 hover:bg-gray-700 hover:shadow-lg hover:shadow-blue-900/30 
+                                      hover:-translate-y-1 block">
+                                <div class="w-full aspect-[2/3] overflow-hidden">
+                                    {% if season.poster_path %}
+                                    <img src="https://image.tmdb.org/t/p/w300{{ season.poster_path }}" 
+                                         alt="Season {{ season.season_number }}" 
+                                         class="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                                         loading="lazy">
+                                    {% else %}
+                                    <div class="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                                        <i class="fas fa-tv text-4xl text-gray-500"></i>
+                                    </div>
                                     {% endif %}
-                                    <span>{{ season.episode_count }} episode{{ season.episode_count|pluralize }}</span>
                                 </div>
-                                {% if season.overview %}
-                                <p class="text-gray-300 mt-3">{{ season.overview|truncatechars:200 }}</p>
-                                {% endif %}
-                                <a href="{% url 'movies:season_detail' show.id season.season_number %}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium mt-3">
-                                    <i class="fas fa-list mr-2"></i>
-                                    View Episodes
-                                </a>
-                            </div>
+                                <div class="p-4">
+                                    <h3 class="font-bold text-lg">{{ season.name }}</h3>
+                                    <div class="text-sm text-gray-400 mt-1">
+                                        {% if season.air_date %}
+                                        <span>{{ season.air_date|slice:":4" }}</span>
+                                        <span class="mx-2">•</span>
+                                        {% endif %}
+                                        <span>{{ season.episode_count }} episode{{ season.episode_count|pluralize }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
                         </div>
                     </div>
-                    {% endfor %}
-                    
-                    {% if show.seasons|length > 3 %}
-                    {% for season in show.seasons|slice:"3:" %}
-                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow season-item hidden">
-                        <div class="flex flex-col sm:flex-row">
-                            <div class="w-full sm:w-48 flex-shrink-0">
-                                {% if season.poster_path %}
-                                <img src="https://image.tmdb.org/t/p/w300{{ season.poster_path }}" 
-                                     alt="Season {{ season.season_number }}" 
-                                     class="w-full h-auto object-cover"
-                                     loading="lazy">
-                                {% else %}
-                                <div class="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
-                                    <i class="fas fa-tv text-4xl text-gray-500"></i>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="p-4 flex-1">
-                                <h3 class="font-bold text-lg">{{ season.name }}</h3>
-                                <div class="text-sm text-gray-400 mt-1">
-                                    {% if season.air_date %}
-                                    <span>{{ season.air_date|slice:":4" }}</span>
-                                    <span class="mx-2">•</span>
-                                    {% endif %}
-                                    <span>{{ season.episode_count }} episode{{ season.episode_count|pluralize }}</span>
-                                </div>
-                                {% if season.overview %}
-                                <p class="text-gray-300 mt-3">{{ season.overview|truncatechars:200 }}</p>
-                                {% endif %}
-                                <a href="{% url 'movies:season_detail' show.id season.season_number %}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium mt-3">
-                                    <i class="fas fa-list mr-2"></i>
-                                    View Episodes
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    
-                    <div class="text-center mt-4" id="view-more-container">
-                        <button id="view-more-seasons" class="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors text-sm font-medium">
-                            View All {{ show.seasons|length }} Seasons
-                            <i class="fas fa-chevron-down ml-2"></i>
-                        </button>
-                    </div>
-                    {% endif %}
                 </div>
             </section>
             {% endif %}
             
-            <!-- Cast & Crew -->
+            <!-- Netflix-Style Horizontal Scroll for Cast -->
             {% if show.credits.cast %}
             <section id="cast-section">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">Cast</h2>
-                    {% if show.credits.cast|length > 8 %}
-                    <a href="#" id="view-all-cast" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
-                    {% endif %}
+                    <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">Cast</h2>
+                    <button id="view-all-cast" class="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+                        View All
+                    </button>
                 </div>
                 
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="cast-container">
-                    {% for actor in show.credits.cast|slice:":8" %}
-                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow cast-item">
-                        <div class="aspect-[2/3] relative">
-                            {% if actor.profile_path %}
-                            <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
-                                 class="w-full h-full object-cover" 
-                                 alt="{{ actor.name }}"
-                                 loading="lazy">
-                            {% else %}
-                            <div class="w-full h-full flex items-center justify-center bg-gray-700">
-                                <i class="fas fa-user text-2xl text-gray-500"></i>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="p-3">
-                            <h4 class="font-bold truncate">{{ actor.name }}</h4>
-                            <p class="text-xs text-gray-400 truncate">{{ actor.character }}</p>
-                        </div>
-                    </div>
-                    {% endfor %}
+                <!-- Horizontal Scrolling Container -->
+                <div class="relative group">
+                    <!-- Navigation Arrows -->
+                    <button id="cast-prev" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black/70 text-white p-3 rounded-full z-10 
+                                        opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed 
+                                        hover:bg-blue-600 -ml-4">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                     
-                    {% if show.credits.cast|length > 8 %}
-                    <div class="hidden" id="expanded-cast">
-                        {% for actor in show.credits.cast|slice:"8:24" %}
-                        <div class="bg-gray-800 rounded-lg overflow-hidden shadow cast-item">
-                            <div class="aspect-[2/3] relative">
-                                {% if actor.profile_path %}
-                                <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
-                                     class="w-full h-full object-cover" 
-                                     alt="{{ actor.name }}"
-                                     loading="lazy">
-                                {% else %}
-                                <div class="w-full h-full flex items-center justify-center bg-gray-700">
-                                    <i class="fas fa-user text-2xl text-gray-500"></i>
+                    <button id="cast-next" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black/70 text-white p-3 rounded-full z-10 
+                                        opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed 
+                                        hover:bg-blue-600 -mr-4">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Scrollable Container -->
+                    <div class="cast-scroll overflow-x-auto pb-6 hide-scrollbar" style="scroll-behavior: smooth;">
+                        <div class="cast-inner-container inline-flex gap-4 min-w-max">
+                            {% for actor in show.credits.cast %}
+                            <div class="cast-item w-40 flex-shrink-0 bg-gray-800 rounded-lg overflow-hidden shadow
+                                          transform transition-all duration-300 hover:bg-gray-700 hover:shadow-lg hover:shadow-blue-900/30 
+                                          hover:-translate-y-1">
+                                <div class="aspect-[2/3] relative overflow-hidden">
+                                    {% if actor.profile_path %}
+                                    <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
+                                         class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
+                                         alt="{{ actor.name }}"
+                                         loading="lazy">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center bg-gray-700">
+                                        <i class="fas fa-user text-2xl text-gray-500"></i>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
+                                <div class="p-3">
+                                    <h4 class="font-bold truncate">{{ actor.name }}</h4>
+                                    <p class="text-xs text-gray-400 truncate">{{ actor.character }}</p>
+                                </div>
                             </div>
-                            <div class="p-3">
-                                <h4 class="font-bold truncate">{{ actor.name }}</h4>
-                                <p class="text-xs text-gray-400 truncate">{{ actor.character }}</p>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                     </div>
-                    
-                    <div class="col-span-full text-center mt-4" id="view-more-cast-container">
-                        <button id="view-more-cast" class="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors text-sm font-medium">
-                            View More Cast
-                            <i class="fas fa-chevron-down ml-2"></i>
-                        </button>
-                    </div>
-                    {% endif %}
                 </div>
             </section>
             {% endif %}
         </div>
         
-        <!-- Sidebar -->
+        <!-- Sidebar with Glass Morphism effect -->
         <div class="space-y-6">
-            <!-- TV Show Details -->
-            <div class="bg-gray-800 rounded-lg p-5">
-                <h3 class="text-lg font-bold mb-4">Show Details</h3>
+            <!-- TV Show Details Glass Card -->
+            <div class="bg-gray-800/80 backdrop-blur-md rounded-lg p-5 border border-gray-700/50 shadow-lg
+                       transition-all duration-500 hover:shadow-blue-900/20 hover:border-gray-600/50">
+                <h3 class="text-lg font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">Show Details</h3>
                 <div class="space-y-3">
                     {% if show.status %}
-                    <div>
+                    <div class="transform hover:translate-x-1 transition-transform duration-300">
                         <h4 class="text-gray-400 text-sm">Status</h4>
                         <p>{{ show.status }}</p>
                     </div>
                     {% endif %}
                     
                     {% if show.first_air_date %}
-                    <div>
+                    <div class="transform hover:translate-x-1 transition-transform duration-300">
                         <h4 class="text-gray-400 text-sm">First Air Date</h4>
                         <p>{{ show.first_air_date }}</p>
                     </div>
                     {% endif %}
                     
                     {% if show.last_air_date %}
-                    <div>
+                    <div class="transform hover:translate-x-1 transition-transform duration-300">
                         <h4 class="text-gray-400 text-sm">Last Air Date</h4>
                         <p>{{ show.last_air_date }}</p>
                     </div>
                     {% endif %}
                     
                     {% if show.number_of_episodes %}
-                    <div>
+                    <div class="transform hover:translate-x-1 transition-transform duration-300">
                         <h4 class="text-gray-400 text-sm">Episodes</h4>
                         <p>{{ show.number_of_episodes }}</p>
                     </div>
                     {% endif %}
                     
                     {% if show.networks %}
-                    <div>
+                    <div class="transform hover:translate-x-1 transition-transform duration-300">
                         <h4 class="text-gray-400 text-sm">Networks</h4>
                         <p>{{ show.networks|join:", " }}</p>
                     </div>
                     {% endif %}
                     
                     {% if show.created_by %}
-                    <div>
+                    <div class="transform hover:translate-x-1 transition-transform duration-300">
                         <h4 class="text-gray-400 text-sm">Created By</h4>
                         <p>{{ show.created_by|join:", " }}</p>
                     </div>
@@ -319,40 +289,61 @@
                 </div>
             </div>
             
-            <!-- Similar Shows -->
+            <!-- Similar Shows with Netflix Horizontal Scroll -->
             {% if show.similar.results %}
             <div>
-                <h3 class="text-lg font-bold mb-4">Similar Shows</h3>
-                <div class="space-y-4" id="similar-shows-container">
-                    {% for similar in show.similar.results|slice:":5" %}
-                    <a href="{% url 'movies:tv_detail' similar.id %}" class="flex bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors">
-                        <div class="w-16 flex-shrink-0">
-                            {% if similar.poster_path %}
-                            <img src="https://image.tmdb.org/t/p/w92{{ similar.poster_path }}" 
-                                 class="w-full h-full object-cover" 
-                                 alt="{{ similar.name }}"
-                                 loading="lazy">
-                            {% else %}
-                            <div class="w-full h-full flex items-center justify-center bg-gray-700 aspect-[2/3]">
-                                <i class="fas fa-tv text-gray-500"></i>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="p-3">
-                            <h4 class="font-medium text-sm">{{ similar.name }}</h4>
-                            <p class="text-xs text-gray-400">{{ similar.first_air_date|slice:":4" }}</p>
-                        </div>
-                    </a>
-                    {% endfor %}
+                <h3 class="text-lg font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">Similar Shows</h3>
+                
+                <!-- Horizontal Scrolling Container -->
+                <div class="relative group">
+                    <!-- Navigation Arrows -->
+                    <button id="similar-prev" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black/70 text-white p-2 rounded-full z-10 
+                                              opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed 
+                                              hover:bg-blue-600 -ml-3">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
                     
-                    {% if show.similar.results|length > 5 %}
-                    <div id="view-more-similar-container" class="text-center pt-2">
-                        <a href="{% url 'movies:similar_shows' show.id %}" class="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm">
-                            View All Similar Shows
-                            <i class="fas fa-chevron-right ml-1"></i>
-                        </a>
+                    <button id="similar-next" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black/70 text-white p-2 rounded-full z-10 
+                                              opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0 disabled:cursor-not-allowed 
+                                              hover:bg-blue-600 -mr-3">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <!-- Scrollable Container -->
+                    <div class="similar-scroll overflow-x-auto pb-4 hide-scrollbar" style="scroll-behavior: smooth;">
+                        <div class="similar-inner-container inline-flex flex-col gap-3 min-w-max">
+                            {% for similar in show.similar.results %}
+                            <a href="{% url 'movies:tv_detail' similar.id %}" 
+                               class="flex bg-gray-800/80 backdrop-blur-sm rounded-lg overflow-hidden hover:bg-gray-700 transition-all 
+                                     duration-300 hover:shadow-lg hover:shadow-blue-900/20 transform hover:translate-x-1 group">
+                                <div class="w-16 flex-shrink-0 overflow-hidden">
+                                    {% if similar.poster_path %}
+                                    <img src="https://image.tmdb.org/t/p/w92{{ similar.poster_path }}" 
+                                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                         alt="{{ similar.name }}"
+                                         loading="lazy">
+                                    {% else %}
+                                    <div class="w-full h-full flex items-center justify-center bg-gray-700 aspect-[2/3]">
+                                        <i class="fas fa-tv text-gray-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="p-3">
+                                    <h4 class="font-medium text-sm">{{ similar.name }}</h4>
+                                    <p class="text-xs text-gray-400">{{ similar.first_air_date|slice:":4" }}</p>
+                                </div>
+                            </a>
+                            {% endfor %}
+                            
+                            <div class="text-center py-2">
+                                <a href="{% url 'movies:similar_shows' show.id %}" 
+                                   class="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm transition-colors">
+                                    View All Similar Shows
+                                    <i class="fas fa-chevron-right ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
-                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -360,97 +351,190 @@
     </div>
 </div>
 
-<!-- JavaScript for interactive elements -->
+<!-- Custom CSS for special effects -->
+<style>
+    .shadow-glow {
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+    
+    .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<!-- Enhanced JavaScript for interactive scrolling -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // View All Seasons functionality
-    const viewAllSeasonsBtn = document.getElementById('view-all-seasons');
-    const viewMoreSeasonsBtn = document.getElementById('view-more-seasons');
-    const viewMoreContainer = document.getElementById('view-more-container');
-    const hiddenSeasons = document.querySelectorAll('.season-item.hidden');
+    // Netflix-Style Horizontal Scroll Functions
+    function setupHorizontalScroll(scrollContainer, prevBtn, nextBtn, innerContainer, itemWidth = 300) {
+        const container = document.querySelector(scrollContainer);
+        const prevButton = document.getElementById(prevBtn);
+        const nextButton = document.getElementById(nextBtn);
+        
+        if (!container || !prevButton || !nextButton) return;
+        
+        // Calculate scroll amount (based on item width + gap)
+        const scrollAmount = itemWidth + 16; // 16px is the gap size
+        
+        // Update button states initially
+        updateScrollButtons();
+        
+        // Set up scroll event listener to update button states
+        container.addEventListener('scroll', updateScrollButtons);
+        
+        // Scroll left button
+        prevButton.addEventListener('click', () => {
+            container.scrollLeft -= scrollAmount * 2; // Scroll 2 items
+            updateScrollButtons();
+        });
+        
+        // Scroll right button
+        nextButton.addEventListener('click', () => {
+            container.scrollLeft += scrollAmount * 2; // Scroll 2 items
+            updateScrollButtons();
+        });
+        
+        // Function to update button enabled/disabled states
+        function updateScrollButtons() {
+            // Check if scroll is at the beginning
+            prevButton.disabled = container.scrollLeft <= 0;
+            
+            // Check if scroll is at the end
+            const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 10;
+            nextButton.disabled = isAtEnd;
+            
+            // Update visual appearance
+            prevButton.style.opacity = prevButton.disabled ? '0' : '';
+            nextButton.style.opacity = nextButton.disabled ? '0' : '';
+        }
+    }
     
+    // Setup horizontal scrolling for all sections
+    setupHorizontalScroll('.seasons-scroll', 'seasons-prev', 'seasons-next', '.seasons-inner-container', 288); // 72rem width
+    setupHorizontalScroll('.cast-scroll', 'cast-prev', 'cast-next', '.cast-inner-container', 160); // 40rem width
+    setupHorizontalScroll('.similar-scroll', 'similar-prev', 'similar-next', '.similar-inner-container', 200);
+    
+    // "View All" functionality for seasons
+    const viewAllSeasonsBtn = document.getElementById('view-all-seasons');
     if (viewAllSeasonsBtn) {
         viewAllSeasonsBtn.addEventListener('click', function(e) {
             e.preventDefault();
+            const seasonsContainer = document.querySelector('.seasons-inner-container');
             
-            // Show all hidden seasons
-            hiddenSeasons.forEach(season => {
-                season.classList.remove('hidden');
+            // Create a fullscreen modal to display all seasons in a grid
+            const modal = document.createElement('div');
+            modal.classList.add('fixed', 'inset-0', 'bg-gray-900/95', 'z-50', 'p-8', 'overflow-auto');
+            
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('max-w-7xl', 'mx-auto');
+            
+            // Header with close button
+            const header = document.createElement('div');
+            header.classList.add('flex', 'justify-between', 'items-center', 'mb-8');
+            
+            const title = document.createElement('h2');
+            title.classList.add('text-3xl', 'font-bold');
+            title.textContent = 'All Seasons';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.classList.add('text-4xl', 'text-gray-400', 'hover:text-white', 'transition-colors');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => modal.remove();
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            modalContent.appendChild(header);
+            
+            // Create grid for seasons
+            const grid = document.createElement('div');
+            grid.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4', 'gap-6');
+            
+            // Clone all season items
+            const seasonItems = document.querySelectorAll('.season-item');
+            seasonItems.forEach(item => {
+                const clone = item.cloneNode(true);
+                grid.appendChild(clone);
             });
             
-            // Hide the "View All" button in header and the "View More" button at bottom
-            if (viewMoreContainer) viewMoreContainer.style.display = 'none';
-            viewAllSeasonsBtn.style.display = 'none';
+            modalContent.appendChild(grid);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+            
+            // Listen for escape key
+            document.addEventListener('keydown', function escapeHandler(e) {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            });
         });
     }
     
-    if (viewMoreSeasonsBtn) {
-        viewMoreSeasonsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Show all hidden seasons
-            hiddenSeasons.forEach(season => {
-                season.classList.remove('hidden');
-            });
-            
-            // Hide the "View More" button
-            viewMoreContainer.style.display = 'none';
-            // Hide the "View All" link in header
-            if (viewAllSeasonsBtn) viewAllSeasonsBtn.style.display = 'none';
-        });
-    }
-    
-    // View All Cast functionality
+    // "View All" functionality for cast
     const viewAllCastBtn = document.getElementById('view-all-cast');
-    const viewMoreCastBtn = document.getElementById('view-more-cast');
-    const expandedCast = document.getElementById('expanded-cast');
-    const viewMoreCastContainer = document.getElementById('view-more-cast-container');
-    
     if (viewAllCastBtn) {
         viewAllCastBtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Add expanded cast items to the grid
-            if (expandedCast) {
-                const castContainer = document.getElementById('cast-container');
-                const castItems = expandedCast.querySelectorAll('.cast-item');
-                
-                castItems.forEach(item => {
-                    castContainer.appendChild(item);
-                });
-                
-                // Remove the now-empty expanded cast container
-                expandedCast.remove();
-            }
+            // Create a fullscreen modal to display all cast in a grid
+            const modal = document.createElement('div');
+            modal.classList.add('fixed', 'inset-0', 'bg-gray-900/95', 'z-50', 'p-8', 'overflow-auto');
             
-            // Hide the "View More" button
-            if (viewMoreCastContainer) viewMoreCastContainer.style.display = 'none';
-            // Hide the "View All" link in header
-            viewAllCastBtn.style.display = 'none';
-        });
-    }
-    
-    if (viewMoreCastBtn) {
-        viewMoreCastBtn.addEventListener('click', function(e) {
-            e.preventDefault();
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('max-w-7xl', 'mx-auto');
             
-            // Add expanded cast items to the grid
-            if (expandedCast) {
-                const castContainer = document.getElementById('cast-container');
-                const castItems = expandedCast.querySelectorAll('.cast-item');
-                
-                castItems.forEach(item => {
-                    castContainer.appendChild(item);
-                });
-                
-                // Remove the now-empty expanded cast container
-                expandedCast.remove();
-            }
+            // Header with close button
+            const header = document.createElement('div');
+            header.classList.add('flex', 'justify-between', 'items-center', 'mb-8');
             
-            // Hide the "View More" button
-            viewMoreCastContainer.style.display = 'none';
-            // Hide the "View All" link in header
-            if (viewAllCastBtn) viewAllCastBtn.style.display = 'none';
+            const title = document.createElement('h2');
+            title.classList.add('text-3xl', 'font-bold');
+            title.textContent = 'Full Cast';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.classList.add('text-4xl', 'text-gray-400', 'hover:text-white', 'transition-colors');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => modal.remove();
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            modalContent.appendChild(header);
+            
+            // Create grid for cast
+            const grid = document.createElement('div');
+            grid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', 'gap-4');
+            
+            // Clone all cast items
+            const castItems = document.querySelectorAll('.cast-item');
+            castItems.forEach(item => {
+                const clone = item.cloneNode(true);
+                grid.appendChild(clone);
+            });
+            
+            modalContent.appendChild(grid);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+            
+            // Listen for escape key
+            document.addEventListener('keydown', function escapeHandler(e) {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            });
         });
     }
 });
