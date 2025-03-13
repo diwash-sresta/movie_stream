@@ -104,6 +104,50 @@ def home(request):
     }
     return render(request, 'movies/home.html', context)
 
+def movies_list(request):
+    """View for movies listing page"""
+    page = request.GET.get('page', 1)
+    category = request.GET.get('category', 'popular')
+    
+    # Map frontend categories to TMDB endpoints
+    endpoint_map = {
+        'popular': 'movie/popular',
+        'top_rated': 'movie/top_rated',
+        'upcoming': 'movie/upcoming',
+        'now_playing': 'movie/now_playing',
+    }
+    
+    endpoint = endpoint_map.get(category, 'movie/popular')
+    
+    # Fetch movies data from TMDB
+    data = get_tmdb_data(endpoint, {'page': page})
+    
+    if not data:
+        return render(request, 'movies/movies_list.html', {
+            'error_message': 'Unable to fetch movies. Please try again later.'
+        })
+    
+    # Set up pagination
+    results = data.get('results', [])
+    total_pages = data.get('total_pages', 1)
+    current_page = data.get('page', 1)
+    
+    context = {
+        'movies': results,
+        'category': category,
+        'categories': [
+            {'id': 'popular', 'name': 'Popular'},
+            {'id': 'top_rated', 'name': 'Top Rated'},
+            {'id': 'upcoming', 'name': 'Upcoming'},
+            {'id': 'now_playing', 'name': 'Now Playing'},
+        ],
+        'current_page': current_page,
+        'total_pages': min(total_pages, 500),  # TMDB API limits to 500 pages
+        'page_range': range(max(1, current_page - 2), min(total_pages + 1, current_page + 3)),
+    }
+    
+    return render(request, 'movies/movies_list.html', context)
+
 def movie_detail(request, movie_id):
     """View for movie detail page"""
     # Fetch basic movie details
@@ -137,37 +181,49 @@ def movie_detail(request, movie_id):
     
     return render(request, 'movies/movie_detail.html', context)
 
-def search(request):
-    """View for search results"""
-    query = request.GET.get('q', '')
+def tv_shows_list(request):
+    """View for TV shows listing page"""
     page = request.GET.get('page', 1)
+    category = request.GET.get('category', 'popular')
     
-    if not query:
-        return render(request, 'movies/search.html', {'query': '', 'results': []})
-    
-    # Fetch search results from TMDB API
-    search_data = get_tmdb_data('search/multi', {
-        'query': query,
-        'page': page,
-        'include_adult': 'false'
-    })
-    
-    results = []
-    if search_data and 'results' in search_data:
-        results = search_data['results']
-    
-    # Set up pagination
-    paginator = Paginator(results, 20)  # 20 results per page
-    page_obj = paginator.get_page(page)
-    
-    context = {
-        'query': query,
-        'results': page_obj,
-        'page_obj': page_obj,
-        'paginator': paginator
+    # Map frontend categories to TMDB endpoints
+    endpoint_map = {
+        'popular': 'tv/popular',
+        'top_rated': 'tv/top_rated',
+        'on_the_air': 'tv/on_the_air',
+        'airing_today': 'tv/airing_today',
     }
     
-    return render(request, 'movies/search.html', context)
+    endpoint = endpoint_map.get(category, 'tv/popular')
+    
+    # Fetch TV shows data from TMDB
+    data = get_tmdb_data(endpoint, {'page': page})
+    
+    if not data:
+        return render(request, 'movies/tv_shows_list.html', {
+            'error_message': 'Unable to fetch TV shows. Please try again later.'
+        })
+    
+    # Set up pagination
+    results = data.get('results', [])
+    total_pages = data.get('total_pages', 1)
+    current_page = data.get('page', 1)
+    
+    context = {
+        'shows': results,
+        'category': category,
+        'categories': [
+            {'id': 'popular', 'name': 'Popular'},
+            {'id': 'top_rated', 'name': 'Top Rated'},
+            {'id': 'on_the_air', 'name': 'On The Air'},
+            {'id': 'airing_today', 'name': 'Airing Today'},
+        ],
+        'current_page': current_page,
+        'total_pages': min(total_pages, 500),  # TMDB API limits to 500 pages
+        'page_range': range(max(1, current_page - 2), min(total_pages + 1, current_page + 3)),
+    }
+    
+    return render(request, 'movies/tv_shows_list.html', context)
 
 def tv_detail(request, tv_id):
     """View for TV show detail page"""
@@ -200,6 +256,70 @@ def tv_detail(request, tv_id):
     }
     
     return render(request, 'movies/tv_detail.html', context)
+
+def season_detail(request, tv_id, season_number):
+    """View for a specific TV season"""
+    season_data = get_tmdb_data(f'tv/{tv_id}/season/{season_number}')
+    
+    if not season_data:
+        return render(request, 'movies/season_detail.html', {
+            'error_message': 'Unable to fetch season details. Please try again later.'
+        })
+    
+    context = {
+        'season': season_data,
+        'tv_id': tv_id,
+    }
+    
+    return render(request, 'movies/season_detail.html', context)
+
+def search(request):
+    """View for search results"""
+    query = request.GET.get('q', '').strip()
+    page = request.GET.get('page', 1)
+    
+    if not query:
+        return render(request, 'movies/search.html', {
+            'query': '',
+            'results': [],
+            'error_message': None
+        })
+    
+    try:
+        # Search for movies, TV shows, and people
+        search_data = get_tmdb_data('search/multi', {
+            'query': query,
+            'page': page,
+            'include_adult': 'false'
+        })
+        
+        if not search_data:
+            raise Exception('Failed to fetch search results')
+
+        # Get results and make sure they have a media_type
+        results = search_data.get('results', [])
+        
+        # Set up pagination
+        paginator = Paginator(results, 20)  # 20 results per page
+        page_obj = paginator.get_page(page)
+        
+        context = {
+            'query': query,
+            'results': page_obj,
+            'page_obj': page_obj,
+            'paginator': paginator,
+            'total_results': search_data.get('total_results', 0)
+        }
+        
+        return render(request, 'movies/search.html', context)
+        
+    except Exception as e:
+        logger.error(f"Search error: {str(e)}")
+        return render(request, 'movies/search.html', {
+            'query': query,
+            'results': [],
+            'error_message': 'An error occurred while searching. Please try again.'
+        })
 
 @require_http_methods(["GET"])
 def get_movies_api(request, list_type):

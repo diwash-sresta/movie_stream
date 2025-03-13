@@ -35,9 +35,9 @@
                     
                     <!-- Desktop Menu -->
                     <div class="hidden md:ml-10 md:flex md:space-x-8">
-                        <a href="{% url 'movies:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200" aria-current="page">Home</a>
-                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">Movies</a>
-                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">TV Shows</a>
+                        <a href="{% url 'movies:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700{% endif %}">Home</a>
+                        <a href="{% url 'movies:movies_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700{% endif %}">Movies</a>
+                        <a href="{% url 'movies:tv_shows_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700{% endif %}">TV Shows</a>
                         <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">My List</a>
                     </div>
                 </div>
@@ -50,7 +50,9 @@
                                 class="w-full md:w-64 rounded-full bg-gray-700/70 border border-gray-600 px-4 py-2 pl-10 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200" 
                                 type="search" 
                                 name="q" 
-                                placeholder="Search movies..."
+                                placeholder="Search movies, TV shows..."
+                                value="{{ request.GET.q|default:'' }}"
+                                required
                             >
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-search text-gray-400"></i>
@@ -60,9 +62,9 @@
                             Search
                         </button>
                     </form>
-                    
+                
                     <!-- Mobile menu button -->
-                    <button type="button" class="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                    <button type="button" class="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <i class="fas fa-bars"></i>
                     </button>
@@ -80,9 +82,9 @@
         <!-- Mobile Menu (Hidden by default) -->
         <div class="md:hidden hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="{% url 'movies:home' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium" aria-current="page">Home</a>
-                <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">Movies</a>
-                <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">TV Shows</a>
+                <a href="{% url 'movies:home' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700{% endif %}">Home</a>
+                <a href="{% url 'movies:movies_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700{% endif %}">Movies</a>
+                <a href="{% url 'movies:tv_shows_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700{% endif %}">TV Shows</a>
                 <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">My List</a>
             </div>
         </div>
@@ -105,57 +107,3 @@
         
         {% block content %}{% endblock %}
     </main>
-    
-    <!-- Footer -->
-    <footer class="bg-gray-800 border-t border-gray-700">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-                <div class="flex items-center space-x-2">
-                    <span class="text-blue-500">
-                        <i class="fas fa-film"></i>
-                    </span>
-                    <span class="font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                        MovieStream
-                    </span>
-                </div>
-                <div class="text-sm text-gray-400">
-                    &copy; 2025 MovieStream. All rights reserved.
-                </div>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
-                        <i class="fab fa-facebook"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
-                        <i class="fab fa-twitter"></i>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    {% if debug %}
-    <script src="http://localhost:35729/livereload.js"></script>
-    {% endif %}
-    
-    <!-- Mobile menu toggle script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuButton = document.querySelector('button[aria-label="Open main menu"], button[aria-controls="mobile-menu"]');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            if (menuButton && mobileMenu) {
-                menuButton.addEventListener('click', function() {
-                    const expanded = this.getAttribute('aria-expanded') === 'true';
-                    this.setAttribute('aria-expanded', !expanded);
-                    mobileMenu.classList.toggle('hidden');
-                });
-            }
-        });
-    </script>
-    
-    {% block extra_scripts %}{% endblock %}
-</body>
-</html>

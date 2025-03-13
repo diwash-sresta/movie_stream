@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}TV Shows | MovieStream{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <h1 class="text-3xl font-bold">TV Shows</h1>
+        
+        <!-- Category Filters -->
+        <div class="flex flex-wrap gap-2">
+            {% for cat in categories %}
+            <a href="?category={{ cat.id }}" class="px-4 py-2 rounded-full text-sm font-medium {% if category == cat.id %}bg-blue-600{% else %}bg-gray-700 hover:bg-gray-600{% endif %} transition-colors duration-200">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- TV Shows Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+        {% for show in shows %}
+        <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+            <a href="{% url 'movies:tv_detail' show.id %}">
+                {% if show.poster_path %}
+                <img src="https://image.tmdb.org/t/p/w500{{ show.poster_path }}" alt="{{ show.name }}" class="w-full h-auto aspect-[2/3] object-cover">
+                {% else %}
+                <div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-tv text-4xl text-gray-500"></i>
+                </div>
+                {% endif %}
+                <div class="p-3">
+                    <h3 class="font-medium text-sm truncate">{{ show.name }}</h3>
+                    <div class="flex items-center text-xs text-gray-400 mt-1">
+                        <span class="flex items-center">
+                            <i class="fas fa-star text-yellow-500 mr-1"></i>
+                            {{ show.vote_average|floatformat:1 }}
+                        </span>
+                        <span class="mx-2">•</span>
+                        <span>{{ show.first_air_date|slice:":4" }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-8 text-center text-gray-400">
+            <p>No TV shows found.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if shows %}
+    <div class="flex justify-center mt-8">
+        <div class="inline-flex rounded-md shadow-sm">
+            {% if current_page > 1 %}
+            <a href="?category={{ category }}&page={{ current_page|add:'-1' }}" class="px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-l-md hover:bg-gray-600">
+                Previous
+            </a>
+            {% endif %}
+            
+            {% for i in page_range %}
+            <a href="?category={{ category }}&page={{ i }}" class="px-4 py-2 text-sm font-medium text-white {% if current_page == i %}bg-blue-600{% else %}bg-gray-700 hover:bg-gray-600{% endif %} {% if forloop.first and current_page > 3 %}rounded-l-md{% endif %} {% if forloop.last and current_page < total_pages|add:'-2' %}rounded-r-md{% endif %}">
+                {{ i }}
+            </a>
+            {% endfor %}
+            
+            {% if current_page < total_pages %}
+            <a href="?category={{ category }}&page={{ current_page|add:'1' }}" class="px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-r-md hover:bg-gray-600">
+                Next
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

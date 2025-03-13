@@ -1,0 +1,458 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ show.name }}{% endblock %}
+
+{% block content %}
+<div class="movie-detail">
+    <!-- TV Show Header -->
+    <div class="relative">
+        <!-- Backdrop Image -->
+        <div class="relative h-96 overflow-hidden rounded-xl">
+            {% if show.backdrop_path %}
+            <div class="absolute inset-0">
+                <img src="https://image.tmdb.org/t/p/original{{ show.backdrop_path }}" 
+                     class="w-full h-full object-cover" 
+                     alt="{{ show.name }} backdrop">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
+            </div>
+            {% else %}
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-900 to-purple-900"></div>
+            {% endif %}
+            
+            <!-- TV Show Info Overlay -->
+            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div class="flex flex-col md:flex-row md:items-end gap-6">
+                    <!-- Poster -->
+                    <div class="flex-shrink-0 w-32 md:w-48 rounded-lg overflow-hidden shadow-2xl transform md:-translate-y-12">
+                        {% if show.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/w500{{ show.poster_path }}" 
+                             class="w-full h-auto" 
+                             alt="{{ show.name }} poster">
+                        {% else %}
+                        <div class="bg-gray-800 w-full aspect-[2/3] flex items-center justify-center">
+                            <i class="fas fa-tv text-5xl text-gray-600"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Info -->
+                    <div class="flex-1">
+                        <h1 class="text-3xl md:text-4xl font-bold">{{ show.name }}</h1>
+                        
+                        {% if show.tagline %}
+                        <p class="text-gray-300 text-lg italic mb-2">{{ show.tagline }}</p>
+                        {% endif %}
+                        
+                        <div class="flex flex-wrap items-center gap-3 mb-3">
+                            <!-- Year -->
+                            {% if show.first_air_date %}
+                            <span class="text-gray-300">{{ show.first_air_date|slice:":4" }}</span>
+                            {% endif %}
+                            
+                            <!-- Number of Seasons -->
+                            {% if show.number_of_seasons %}
+                            <span class="text-gray-300">{{ show.number_of_seasons }} season{{ show.number_of_seasons|pluralize }}</span>
+                            {% endif %}
+                            
+                            <!-- Rating -->
+                            {% if show.vote_average %}
+                            <div class="flex items-center bg-black/50 px-2 py-1 rounded">
+                                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                <span>{{ show.vote_average|floatformat:1 }}/10</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Genres -->
+                        {% if show.genres %}
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            {% for genre in show.genres %}
+                            <span class="px-3 py-1 bg-gray-700 rounded-full text-xs">{{ genre.name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Actions -->
+                        <div class="flex flex-wrap gap-3 mt-4">
+                            <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium shadow">
+                                <i class="fas fa-play mr-2"></i>
+                                Watch Now
+                            </button>
+                            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium">
+                                <i class="fas fa-plus mr-2"></i>
+                                Add to List
+                            </button>
+                            <button class="inline-flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors text-sm">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Details Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <!-- Overview and Details -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Overview -->
+            {% if show.overview %}
+            <section>
+                <h2 class="text-2xl font-bold mb-4">Overview</h2>
+                <p class="text-gray-300">{{ show.overview }}</p>
+            </section>
+            {% endif %}
+            
+            <!-- Seasons Section -->
+            {% if show.seasons %}
+            <section id="seasons-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Seasons</h2>
+                    {% if show.seasons|length > 3 %}
+                    <a href="#" id="view-all-seasons" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
+                    {% endif %}
+                </div>
+                
+                <div class="space-y-4" id="seasons-container">
+                    {% for season in show.seasons|slice:":3" %}
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow season-item">
+                        <div class="flex flex-col sm:flex-row">
+                            <div class="w-full sm:w-48 flex-shrink-0">
+                                {% if season.poster_path %}
+                                <img src="https://image.tmdb.org/t/p/w300{{ season.poster_path }}" 
+                                     alt="Season {{ season.season_number }}" 
+                                     class="w-full h-auto object-cover"
+                                     loading="lazy">
+                                {% else %}
+                                <div class="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                                    <i class="fas fa-tv text-4xl text-gray-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="p-4 flex-1">
+                                <h3 class="font-bold text-lg">{{ season.name }}</h3>
+                                <div class="text-sm text-gray-400 mt-1">
+                                    {% if season.air_date %}
+                                    <span>{{ season.air_date|slice:":4" }}</span>
+                                    <span class="mx-2">•</span>
+                                    {% endif %}
+                                    <span>{{ season.episode_count }} episode{{ season.episode_count|pluralize }}</span>
+                                </div>
+                                {% if season.overview %}
+                                <p class="text-gray-300 mt-3">{{ season.overview|truncatechars:200 }}</p>
+                                {% endif %}
+                                <a href="{% url 'movies:season_detail' show.id season.season_number %}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium mt-3">
+                                    <i class="fas fa-list mr-2"></i>
+                                    View Episodes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if show.seasons|length > 3 %}
+                    {% for season in show.seasons|slice:"3:" %}
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow season-item hidden">
+                        <div class="flex flex-col sm:flex-row">
+                            <div class="w-full sm:w-48 flex-shrink-0">
+                                {% if season.poster_path %}
+                                <img src="https://image.tmdb.org/t/p/w300{{ season.poster_path }}" 
+                                     alt="Season {{ season.season_number }}" 
+                                     class="w-full h-auto object-cover"
+                                     loading="lazy">
+                                {% else %}
+                                <div class="w-full aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                                    <i class="fas fa-tv text-4xl text-gray-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="p-4 flex-1">
+                                <h3 class="font-bold text-lg">{{ season.name }}</h3>
+                                <div class="text-sm text-gray-400 mt-1">
+                                    {% if season.air_date %}
+                                    <span>{{ season.air_date|slice:":4" }}</span>
+                                    <span class="mx-2">•</span>
+                                    {% endif %}
+                                    <span>{{ season.episode_count }} episode{{ season.episode_count|pluralize }}</span>
+                                </div>
+                                {% if season.overview %}
+                                <p class="text-gray-300 mt-3">{{ season.overview|truncatechars:200 }}</p>
+                                {% endif %}
+                                <a href="{% url 'movies:season_detail' show.id season.season_number %}" class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium mt-3">
+                                    <i class="fas fa-list mr-2"></i>
+                                    View Episodes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="text-center mt-4" id="view-more-container">
+                        <button id="view-more-seasons" class="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors text-sm font-medium">
+                            View All {{ show.seasons|length }} Seasons
+                            <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+            
+            <!-- Cast & Crew -->
+            {% if show.credits.cast %}
+            <section id="cast-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Cast</h2>
+                    {% if show.credits.cast|length > 8 %}
+                    <a href="#" id="view-all-cast" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="cast-container">
+                    {% for actor in show.credits.cast|slice:":8" %}
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow cast-item">
+                        <div class="aspect-[2/3] relative">
+                            {% if actor.profile_path %}
+                            <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
+                                 class="w-full h-full object-cover" 
+                                 alt="{{ actor.name }}"
+                                 loading="lazy">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-700">
+                                <i class="fas fa-user text-2xl text-gray-500"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <h4 class="font-bold truncate">{{ actor.name }}</h4>
+                            <p class="text-xs text-gray-400 truncate">{{ actor.character }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if show.credits.cast|length > 8 %}
+                    <div class="hidden" id="expanded-cast">
+                        {% for actor in show.credits.cast|slice:"8:24" %}
+                        <div class="bg-gray-800 rounded-lg overflow-hidden shadow cast-item">
+                            <div class="aspect-[2/3] relative">
+                                {% if actor.profile_path %}
+                                <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
+                                     class="w-full h-full object-cover" 
+                                     alt="{{ actor.name }}"
+                                     loading="lazy">
+                                {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gray-700">
+                                    <i class="fas fa-user text-2xl text-gray-500"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="p-3">
+                                <h4 class="font-bold truncate">{{ actor.name }}</h4>
+                                <p class="text-xs text-gray-400 truncate">{{ actor.character }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="col-span-full text-center mt-4" id="view-more-cast-container">
+                        <button id="view-more-cast" class="inline-flex items-center px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-md transition-colors text-sm font-medium">
+                            View More Cast
+                            <i class="fas fa-chevron-down ml-2"></i>
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- TV Show Details -->
+            <div class="bg-gray-800 rounded-lg p-5">
+                <h3 class="text-lg font-bold mb-4">Show Details</h3>
+                <div class="space-y-3">
+                    {% if show.status %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Status</h4>
+                        <p>{{ show.status }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if show.first_air_date %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">First Air Date</h4>
+                        <p>{{ show.first_air_date }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if show.last_air_date %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Last Air Date</h4>
+                        <p>{{ show.last_air_date }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if show.number_of_episodes %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Episodes</h4>
+                        <p>{{ show.number_of_episodes }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if show.networks %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Networks</h4>
+                        <p>{{ show.networks|join:", " }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if show.created_by %}
+                    <div>
+                        <h4 class="text-gray-400 text-sm">Created By</h4>
+                        <p>{{ show.created_by|join:", " }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Similar Shows -->
+            {% if show.similar.results %}
+            <div>
+                <h3 class="text-lg font-bold mb-4">Similar Shows</h3>
+                <div class="space-y-4" id="similar-shows-container">
+                    {% for similar in show.similar.results|slice:":5" %}
+                    <a href="{% url 'movies:tv_detail' similar.id %}" class="flex bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors">
+                        <div class="w-16 flex-shrink-0">
+                            {% if similar.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w92{{ similar.poster_path }}" 
+                                 class="w-full h-full object-cover" 
+                                 alt="{{ similar.name }}"
+                                 loading="lazy">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center bg-gray-700 aspect-[2/3]">
+                                <i class="fas fa-tv text-gray-500"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <h4 class="font-medium text-sm">{{ similar.name }}</h4>
+                            <p class="text-xs text-gray-400">{{ similar.first_air_date|slice:":4" }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                    
+                    {% if show.similar.results|length > 5 %}
+                    <div id="view-more-similar-container" class="text-center pt-2">
+                        <a href="{% url 'movies:similar_shows' show.id %}" class="inline-flex items-center text-blue-400 hover:text-blue-300 text-sm">
+                            View All Similar Shows
+                            <i class="fas fa-chevron-right ml-1"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for interactive elements -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View All Seasons functionality
+    const viewAllSeasonsBtn = document.getElementById('view-all-seasons');
+    const viewMoreSeasonsBtn = document.getElementById('view-more-seasons');
+    const viewMoreContainer = document.getElementById('view-more-container');
+    const hiddenSeasons = document.querySelectorAll('.season-item.hidden');
+    
+    if (viewAllSeasonsBtn) {
+        viewAllSeasonsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show all hidden seasons
+            hiddenSeasons.forEach(season => {
+                season.classList.remove('hidden');
+            });
+            
+            // Hide the "View All" button in header and the "View More" button at bottom
+            if (viewMoreContainer) viewMoreContainer.style.display = 'none';
+            viewAllSeasonsBtn.style.display = 'none';
+        });
+    }
+    
+    if (viewMoreSeasonsBtn) {
+        viewMoreSeasonsBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Show all hidden seasons
+            hiddenSeasons.forEach(season => {
+                season.classList.remove('hidden');
+            });
+            
+            // Hide the "View More" button
+            viewMoreContainer.style.display = 'none';
+            // Hide the "View All" link in header
+            if (viewAllSeasonsBtn) viewAllSeasonsBtn.style.display = 'none';
+        });
+    }
+    
+    // View All Cast functionality
+    const viewAllCastBtn = document.getElementById('view-all-cast');
+    const viewMoreCastBtn = document.getElementById('view-more-cast');
+    const expandedCast = document.getElementById('expanded-cast');
+    const viewMoreCastContainer = document.getElementById('view-more-cast-container');
+    
+    if (viewAllCastBtn) {
+        viewAllCastBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Add expanded cast items to the grid
+            if (expandedCast) {
+                const castContainer = document.getElementById('cast-container');
+                const castItems = expandedCast.querySelectorAll('.cast-item');
+                
+                castItems.forEach(item => {
+                    castContainer.appendChild(item);
+                });
+                
+                // Remove the now-empty expanded cast container
+                expandedCast.remove();
+            }
+            
+            // Hide the "View More" button
+            if (viewMoreCastContainer) viewMoreCastContainer.style.display = 'none';
+            // Hide the "View All" link in header
+            viewAllCastBtn.style.display = 'none';
+        });
+    }
+    
+    if (viewMoreCastBtn) {
+        viewMoreCastBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Add expanded cast items to the grid
+            if (expandedCast) {
+                const castContainer = document.getElementById('cast-container');
+                const castItems = expandedCast.querySelectorAll('.cast-item');
+                
+                castItems.forEach(item => {
+                    castContainer.appendChild(item);
+                });
+                
+                // Remove the now-empty expanded cast container
+                expandedCast.remove();
+            }
+            
+            // Hide the "View More" button
+            viewMoreCastContainer.style.display = 'none';
+            // Hide the "View All" link in header
+            if (viewAllCastBtn) viewAllCastBtn.style.display = 'none';
+        });
+    }
+});
+</script>
+{% endblock %}
