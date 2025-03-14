@@ -6,14 +6,14 @@
 
 {% block content %}
 <div class="movie-detail">
-    <!-- Movie Header -->
+    <!-- Enhanced Cinematic Hero Section -->
     <div class="relative">
-        <!-- Backdrop Image -->
-        <div class="relative h-96 overflow-hidden rounded-xl">
+        <!-- Backdrop Image with Parallax Effect -->
+        <div class="relative h-96 overflow-hidden rounded-xl group">
             {% if movie.backdrop_path %}
-            <div class="absolute inset-0">
+            <div class="absolute inset-0 transform scale-110 transition-transform duration-10000 hover:scale-105">
                 <img src="https://image.tmdb.org/t/p/original{{ movie.backdrop_path }}" 
-                     class="w-full h-full object-cover" 
+                     class="w-full h-full object-cover blur-sm scale-105 group-hover:blur-none group-hover:scale-100 transition-all duration-1000" 
                      alt="{{ movie.title }} backdrop">
                 <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
             </div>
@@ -24,8 +24,9 @@
             <!-- Movie Info Overlay -->
             <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
                 <div class="flex flex-col md:flex-row md:items-end gap-6">
-                    <!-- Poster -->
-                    <div class="flex-shrink-0 w-32 md:w-48 rounded-lg overflow-hidden shadow-2xl transform md:-translate-y-12">
+                    <!-- Poster with Hover Effect -->
+                    <div class="flex-shrink-0 w-32 md:w-48 rounded-lg overflow-hidden shadow-2xl transform md:-translate-y-12
+                                transition-all duration-500 hover:shadow-blue-500/50 hover:-translate-y-16 group-hover:scale-105">
                         {% if movie.poster_path %}
                         <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
                              class="w-full h-auto" 
@@ -38,8 +39,10 @@
                     </div>
                     
                     <!-- Info -->
-                    <div class="flex-1">
-                        <h1 class="text-3xl md:text-4xl font-bold">{{ movie.title }}</h1>
+                    <div class="flex-1 transform translate-y-0 transition-all duration-700 group-hover:translate-y-[-10px]">
+                        <h1 class="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">
+                            {{ movie.title }}
+                        </h1>
                         
                         {% if movie.tagline %}
                         <p class="text-gray-300 text-lg italic mb-2">{{ movie.tagline }}</p>
@@ -56,41 +59,51 @@
                             <span class="text-gray-300">{{ movie.runtime }} min</span>
                             {% endif %}
                             
-                            <!-- Rating -->
+                            <!-- Enhanced Rating Badge -->
                             {% if movie.vote_average %}
-                            <div class="flex items-center bg-black/50 px-2 py-1 rounded">
+                            <div class="flex items-center bg-black/50 backdrop-blur-sm px-2 py-1 rounded-full border border-yellow-500/30">
                                 <i class="fas fa-star text-yellow-400 mr-1"></i>
                                 <span>{{ movie.vote_average|floatformat:1 }}/10</span>
                             </div>
                             {% endif %}
                         </div>
 
-                        <!-- Genres -->
+                        <!-- Genres with animation -->
                         {% if movie.genres %}
                         <div class="flex flex-wrap gap-2 mb-4">
                             {% for genre in movie.genres %}
-                            <span class="px-3 py-1 bg-gray-700 rounded-full text-xs">{{ genre.name }}</span>
+                            <span class="px-3 py-1 bg-gray-700/80 backdrop-blur-sm rounded-full text-xs border border-gray-600 
+                                       transition-all duration-300 hover:bg-blue-700/70 hover:scale-105 hover:border-blue-500">
+                                {{ genre.name }}
+                            </span>
                             {% endfor %}
                         </div>
                         {% endif %}
                         
-                        <!-- Actions -->
+                        <!-- Modern Action Buttons -->
                         <div class="flex flex-wrap gap-3 mt-4">
-                            <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors text-sm font-medium shadow">
-                                <i class="fas fa-play mr-2"></i>
+                            <button class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-all duration-300 
+                                          text-sm font-medium shadow hover:shadow-blue-500/50 transform hover:-translate-y-1 group">
+                                <i class="fas fa-play mr-2 transform group-hover:scale-110 transition-transform"></i>
                                 Watch Now
                             </button>
                             {% if trailer_key %}
-                            <button id="play-trailer-btn" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md transition-colors text-sm font-medium shadow">
-                                <i class="fas fa-film mr-2"></i>
+                            <button id="play-trailer-btn" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md 
+                                                                transition-all duration-300 text-sm font-medium shadow hover:shadow-red-500/50 
+                                                                transform hover:-translate-y-1 group">
+                                <i class="fas fa-film mr-2 transform group-hover:scale-110 transition-transform"></i>
                                 Play Trailer
                             </button>
                             {% endif %}
-                            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors text-sm font-medium">
+                            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md 
+                                          border border-gray-700 transition-all duration-300 text-sm font-medium 
+                                          hover:border-gray-500 transform hover:-translate-y-1">
                                 <i class="fas fa-plus mr-2"></i>
                                 Add to List
                             </button>
-                            <button class="inline-flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors text-sm">
+                            <button class="inline-flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded-full 
+                                          border border-gray-700 transition-all duration-300 text-sm
+                                          hover:border-gray-500 transform hover:rotate-12">
                                 <i class="fas fa-share-alt"></i>
                             </button>
                         </div>
@@ -99,14 +112,16 @@
             </div>
         </div>
     </div>
+                    
+                   
     
-    <!-- Details Section -->
+       <!-- Details Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
         <!-- Overview and Details -->
         <div class="lg:col-span-2 space-y-8">
-            <!-- Overview -->
-            <section>
-                <h2 class="text-2xl font-bold mb-4">Overview</h2>
+            <!-- Overview with animation -->
+            <section class="transform transition-all duration-700 hover:translate-x-2">
+                <h2 class="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-blue-300">Overview</h2>
                 <p class="text-gray-300">{{ movie.overview }}</p>
             </section>
             
