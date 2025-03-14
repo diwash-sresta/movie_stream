@@ -1,0 +1,94 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}My Watchlist{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <h1 class="text-3xl font-bold">My Watchlist</h1>
+        <p class="text-gray-400">Keep track of what you want to watch</p>
+    </div>
+
+    {% if watchlist_items %}
+        <!-- Movies Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+            {% for item in watchlist_items %}
+            <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
+                <a href="{% if item.media_type == 'movie' %}{% url 'movies:movie_detail' item.id %}{% else %}{% url 'movies:tv_detail' item.id %}{% endif %}">
+                    {% if item.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w500{{ item.poster_path }}" 
+                         alt="{{ item.title }}" 
+                         class="w-full h-auto aspect-[2/3] object-cover"
+                         loading="lazy">
+                    {% else %}
+                    <div class="w-full h-auto aspect-[2/3] bg-gray-700 flex items-center justify-center">
+                        <i class="fas fa-film text-4xl text-gray-500"></i>
+                    </div>
+                    {% endif %}
+                    <div class="p-3">
+                        <h3 class="font-medium text-sm truncate">{{ item.title }}</h3>
+                        <div class="flex items-center justify-between text-xs text-gray-400 mt-1">
+                            <div class="flex items-center">
+                                <span class="flex items-center">
+                                    <i class="fas fa-star text-yellow-500 mr-1"></i>
+                                    {{ item.vote_average|floatformat:1 }}
+                                </span>
+                                <span class="mx-2">•</span>
+                                <span>
+                                    {% if item.media_type == 'movie' %}
+                                        {{ item.release_date|slice:":4"|default:"" }}
+                                    {% else %}
+                                        {{ item.first_air_date|slice:":4"|default:"" }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <button onclick="removeFromWatchlist('{{ item.id }}', '{{ item.media_type }}')"
+                                    class="text-gray-400 hover:text-red-500 transition-colors">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-list text-4xl text-gray-600 mb-3"></i>
+            <h2 class="text-xl text-gray-400 mb-2">Your watchlist is empty</h2>
+            <p class="text-gray-500 mb-6">Start adding movies and TV shows to keep track of what you want to watch</p>
+            <a href="{% url 'movies:home' %}" 
+               class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                Browse Content
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+{% if watchlist_items %}
+<script>
+function removeFromWatchlist(itemId, mediaType) {
+    fetch('/api/watchlist/remove/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            media_type: mediaType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endif %}
+{% endblock %}

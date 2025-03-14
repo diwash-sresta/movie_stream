@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+{% load static %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center px-4">
+    <div class="bg-gray-800/50 backdrop-blur p-8 rounded-xl shadow-lg max-w-md w-full border border-gray-700">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold">Create an Account</h1>
+            <p class="text-gray-400 mt-2">Join MovieStream today</p>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="p-4 rounded-lg bg-red-500/10 border border-red-500 text-red-500">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p class="mb-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="mt-1 text-sm text-gray-400">{{ field.help_text }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" 
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors duration-200">
+                Create Account
+            </button>
+        </form>
+
+        <div class="mt-6 text-center">
+            <p class="text-gray-400">
+                Already have an account? 
+                <a href="{% url 'movies:login' %}" class="text-blue-400 hover:text-blue-300">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

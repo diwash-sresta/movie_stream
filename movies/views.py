@@ -9,11 +9,14 @@ import json
 import requests
 from requests.exceptions import RequestException
 import logging
-# from django.contrib.auth import login
+from django.contrib.auth import login, logout, authenticate
 # from .models import  Profile
-# from django.contrib.auth.models import User
-# from urllib.parse import urlencode
-# from .forms import CustomSignUpForm 
+from django.contrib.auth.models import User
+from urllib.parse import urlencode
+# from .forms import CustomSignUpForm
+from django.contrib.auth.decorators import login_required 
+from movie_stream.forms import SignUpForm
+from django.contrib import messages
 
 
 logger = logging.getLogger(__name__)
@@ -385,18 +388,153 @@ def get_movies_api(request, list_type):
     
     return JsonResponse(data)
 
-# def signup(request):
-#     if request.method == 'POST':
-#         form = CustomSignUpForm(request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             login(request, user)
-#             messages.success(request, 'Welcome to Expense Tracker!')
-#             return redirect('trackense:expense_list')
-#     else:
-#         form = CustomSignUpForm()
-#     return render(request, 'registration/signup.html', {'form': form})
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get('next', 'movies:home')
+            messages.success(request, f'Welcome back, {user.username}!')
+            return redirect(next_url)
+        else:
+            messages.error(request, 'Invalid username or password.')
+    
+    return render(request, 'movies/login.html')
 
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, 'Account created successfully!')
+            return redirect('movies:home')
+    else:
+        form = SignUpForm()
+    
+    return render(request, 'movies/signup.html', {'form': form})
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'You have been logged out.')
+    return redirect('movies:home')
+@login_required
+def profile_view(request):
+    """View for user profile page"""
+    if request.method == 'POST':
+        # Handle profile updates
+        user = request.user
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        
+        # Check if username is already taken
+        if User.objects.exclude(pk=user.pk).filter(username=username).exists():
+            messages.error(request, 'This username is already taken.')
+            return redirect('movies:profile')
+            
+        # Check if email is already taken
+        if User.objects.exclude(pk=user.pk).filter(email=email).exists():
+            messages.error(request, 'This email is already registered.')
+            return redirect('movies:profile')
+            
+        # Update user information
+        user.username = username
+        user.email = email
+        user.save()
+        
+        messages.success(request, 'Profile updated successfully!')
+        return redirect('movies:profile')
+        
+    return render(request, 'movies/profile.html', {
+        'user': request.user,
+    })
+
+@login_required
+def watchlist_view(request):
+    """View for displaying and managing user's watchlist"""
+    watchlist = request.session.get('watchlist', {})
+    watchlist_items = []
+    
+    for item_id, item_type in watchlist.items():
+        try:
+            if item_type == 'movie':
+                data = get_tmdb_data(f'movie/{item_id}')
+                if data:
+                    data['media_type'] = 'movie'
+            else:
+                data = get_tmdb_data(f'tv/{item_id}')
+                if data:
+                    data['media_type'] = 'tv'
+                    # Ensure TV shows use 'name' as their title
+                    data['title'] = data.get('name')
+            
+            if data:
+                watchlist_items.append(data)
+                
+        except Exception as e:
+            logger.error(f"Error fetching watchlist item {item_id}: {str(e)}")
+    
+    return render(request, 'movies/watchlist.html', {
+        'watchlist_items': watchlist_items
+    })
+
+@login_required
+def add_to_watchlist(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            item_id = data.get('item_id')
+            media_type = data.get('media_type')
+            
+            # Initialize watchlist in session if it doesn't exist
+            if 'watchlist' not in request.session:
+                request.session['watchlist'] = {}
+            
+            # Add item to watchlist
+            request.session['watchlist'][str(item_id)] = media_type
+            request.session.modified = True
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Added to watchlist'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
+
+@login_required
+def remove_from_watchlist(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            item_id = str(data.get('item_id'))
+            
+            # Remove item from watchlist
+            if 'watchlist' in request.session and item_id in request.session['watchlist']:
+                del request.session['watchlist'][item_id]
+                request.session.modified = True
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Removed from watchlist'
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 # def google_login(request):
 #     """Redirect users to Google's OAuth consent screen."""
 #     params = {
@@ -456,4 +594,4 @@ def get_movies_api(request, list_type):
 
 #     # Log the user in with the specified backend
 #     login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-#     return redirect('trackense:dashboard') 
+#     return redirect('trackense:dashboard')

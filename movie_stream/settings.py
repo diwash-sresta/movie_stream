@@ -167,3 +167,4 @@ TAILWIND_CSS_PATH = "css/dist/styles.css"
 # Ensure theme app is installed
 if "theme" not in INSTALLED_APPS:
     INSTALLED_APPS.append("theme")
+

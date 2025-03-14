@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign Up - QuizMaster{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="card shadow-sm p-4" style="width: 100%; max-width: 450px; border-radius: 12px;">
+        
+        <!-- QuizMaster Logo & Title -->
+        <div class="text-center mb-3">
+            
+            <h3 class="mt-2 fw-bold text-primary">
+                <i class="bi bi-mortarboard-fill me-2 fs-4"></i>QuizMaster</h3>
+            <p class="text-muted">Create your account to start quizzing!</p>
+        </div>
+
+        <!-- Sign Up Form -->
+        <form method="post">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1">{{ field.errors }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <div class="form-text small text-muted">{{ field.help_text }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button id="signup-button" type="submit" class="btn btn-primary w-100">Sign Up</button>
+        </form>
+
+        <p class="text-center mt-3">
+            Already have an account? <a href="{% url 'login' %}">Log In</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+

@@ -38,7 +38,18 @@
                         <a href="{% url 'movies:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700{% endif %}">Home</a>
                         <a href="{% url 'movies:movies_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700{% endif %}">Movies</a>
                         <a href="{% url 'movies:tv_shows_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700{% endif %}">TV Shows</a>
-                        <a href="#" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">My List</a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'movies:watchlist' %}" 
+                               class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 
+                               {% if request.resolver_match.url_name == 'watchlist' %}text-white bg-gray-700{% endif %}">
+                                My List
+                            </a>
+                        {% else %}
+                            <a href="{% url 'movies:login' %}?next={% url 'movies:watchlist' %}" 
+                               class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                                My List
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
                 
@@ -70,11 +81,71 @@
                     </button>
                     
                     <!-- User Menu (Optional) -->
-                    <div class="hidden md:flex md:items-center md:ml-4">
-                        <a href="#" class="text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors duration-200">
-                            <i class="fas fa-user"></i>
-                        </a>
-                    </div>
+                    <div class="hidden md:flex md:items-center md:ml-4" x-data="{ profileOpen: false }">
+    {% if user.is_authenticated %}
+        <div class="relative">
+            <button @click="profileOpen = !profileOpen" class="flex items-center text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors duration-200">
+                <i class="fas fa-user text-xl"></i>
+                <span class="ml-2 text-sm">{{ user.username }}</span>
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div x-show="profileOpen" 
+                 @click.away="profileOpen = false"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-95"
+                 class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5">
+                <div class="py-1">
+                    <a href="{% url 'movies:profile' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+                        <i class="fas fa-user-cog mr-2"></i>Profile Settings
+                    </a>
+                    <a href="{% url 'movies:watchlist' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+                        <i class="fas fa-list mr-2"></i>My Watchlist
+                    </a>
+                    <hr class="border-gray-700 my-1">
+                    <form action="{% url 'movies:logout' %}" method="POST" class="block">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="relative">
+            <button @click="profileOpen = !profileOpen" 
+                    class="flex items-center text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors duration-200">
+                <i class="fas fa-user text-xl"></i>
+            </button>
+            
+            <!-- Login/Signup Dropdown -->
+            <div x-show="profileOpen" 
+                 @click.away="profileOpen = false"
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-95"
+                 class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 py-1">
+                <a href="{% url 'movies:login' %}" 
+                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Login
+                </a>
+                <a href="{% url 'movies:signup' %}" 
+                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <i class="fas fa-user-plus mr-2"></i>Sign Up
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
                 </div>
             </div>
         </div>
@@ -85,7 +156,18 @@
                 <a href="{% url 'movies:home' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700{% endif %}">Home</a>
                 <a href="{% url 'movies:movies_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700{% endif %}">Movies</a>
                 <a href="{% url 'movies:tv_shows_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700{% endif %}">TV Shows</a>
-                <a href="#" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">My List</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'movies:watchlist' %}" 
+                       class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium 
+                       {% if request.resolver_match.url_name == 'watchlist' %}text-white bg-gray-700{% endif %}">
+                        My List
+                    </a>
+                {% else %}
+                    <a href="{% url 'movies:login' %}?next={% url 'movies:watchlist' %}" 
+                       class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">
+                        My List
+                    </a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -107,3 +189,5 @@
         
         {% block content %}{% endblock %}
     </main>
+</body>
+</html>

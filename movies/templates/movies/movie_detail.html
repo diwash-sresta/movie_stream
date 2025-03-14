@@ -95,11 +95,13 @@
                                 Play Trailer
                             </button>
                             {% endif %}
-                            <button class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md 
-                                          border border-gray-700 transition-all duration-300 text-sm font-medium 
-                                          hover:border-gray-500 transform hover:-translate-y-1">
-                                <i class="fas fa-plus mr-2"></i>
-                                Add to List
+                            <button onclick="toggleWatchlist('{{ movie.id }}', 'movie')"
+                                    class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md 
+                                           border border-gray-700 transition-all duration-300 text-sm font-medium 
+                                           hover:border-gray-500 transform hover:-translate-y-1"
+                                    id="watchlist-button">
+                                <i class="fas fa-plus mr-2" id="watchlist-icon"></i>
+                                <span id="watchlist-text">Add to List</span>
                             </button>
                             <button class="inline-flex items-center p-2 bg-gray-700 hover:bg-gray-600 rounded-full 
                                           border border-gray-700 transition-all duration-300 text-sm
@@ -344,6 +346,66 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('popstate', function(event) {
         handleCloseModal();
     });
+});
+
+function toggleWatchlist(itemId, mediaType) {
+    {% if user.is_authenticated %}
+        const button = document.getElementById('watchlist-button');
+        const icon = document.getElementById('watchlist-icon');
+        const text = document.getElementById('watchlist-text');
+        
+        // Check if item is in watchlist
+        const isInWatchlist = button.classList.contains('in-watchlist');
+        const endpoint = isInWatchlist ? '/api/watchlist/remove/' : '/api/watchlist/add/';
+        
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                item_id: itemId,
+                media_type: mediaType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (isInWatchlist) {
+                    button.classList.remove('in-watchlist', 'bg-blue-600', 'hover:bg-blue-700');
+                    button.classList.add('bg-gray-700', 'hover:bg-gray-600');
+                    icon.classList.remove('fa-check');
+                    icon.classList.add('fa-plus');
+                    text.textContent = 'Add to List';
+                } else {
+                    button.classList.add('in-watchlist', 'bg-blue-600', 'hover:bg-blue-700');
+                    button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+                    icon.classList.remove('fa-plus');
+                    icon.classList.add('fa-check');
+                    text.textContent = 'Added to List';
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    {% else %}
+        window.location.href = "{% url 'movies:login' %}";
+    {% endif %}
+}
+
+// Check if movie is in watchlist on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% if 'watchlist' in request.session and movie.id|stringformat:"s" in request.session.watchlist %}
+        const button = document.getElementById('watchlist-button');
+        const icon = document.getElementById('watchlist-icon');
+        const text = document.getElementById('watchlist-text');
+        
+        button.classList.add('in-watchlist', 'bg-blue-600', 'hover:bg-blue-700');
+        button.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+        icon.classList.remove('fa-plus');
+        icon.classList.add('fa-check');
+        text.textContent = 'Added to List';
+    {% endif %}
 });
 </script>
 {% endif %}
