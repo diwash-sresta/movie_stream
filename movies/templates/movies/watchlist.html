@@ -16,7 +16,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             {% for item in watchlist_items %}
             <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105">
-                <a href="{% if item.media_type == 'movie' %}{% url 'movies:movie_detail' item.id %}{% else %}{% url 'movies:tv_detail' item.id %}{% endif %}">
+                <a href="{% if item.media_type == 'movie' %}{% url 'movies:movie_detail' item.item_id %}{% else %}{% url 'movies:tv_detail' item.item_id %}{% endif %}">
                     {% if item.poster_path %}
                     <img src="https://image.tmdb.org/t/p/w500{{ item.poster_path }}" 
                          alt="{{ item.title }}" 
@@ -37,14 +37,10 @@
                                 </span>
                                 <span class="mx-2">•</span>
                                 <span>
-                                    {% if item.media_type == 'movie' %}
-                                        {{ item.release_date|slice:":4"|default:"" }}
-                                    {% else %}
-                                        {{ item.first_air_date|slice:":4"|default:"" }}
-                                    {% endif %}
+                                    {{ item.release_date|slice:":4"|default:"" }}
                                 </span>
                             </div>
-                            <button onclick="removeFromWatchlist('{{ item.id }}', '{{ item.media_type }}')"
+                            <button onclick="removeFromWatchlist('{{ item.item_id }}', '{{ item.media_type }}')"
                                     class="text-gray-400 hover:text-red-500 transition-colors">
                                 <i class="fas fa-times"></i>
                             </button>

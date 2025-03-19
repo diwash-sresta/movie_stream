@@ -48,6 +48,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'django.contrib.humanize',
     'livereload',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 TAILWIND_APP_NAME = "theme"
@@ -57,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -90,11 +96,14 @@ WSGI_APPLICATION = 'movie_stream.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT' ),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -168,3 +177,25 @@ TAILWIND_CSS_PATH = "css/dist/styles.css"
 if "theme" not in INSTALLED_APPS:
     INSTALLED_APPS.append("theme")
 
+AUTHENTICATION_BACKENDS = [
+    # Default Django auth backend
+    'django.contrib.auth.backends.ModelBackend',
+    # Add allauth backend
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+SITE_ID = 1
+
+# Redirect URLs
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'login'
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI')
+
+# Google OAuth endpoints from the .env file
+GOOGLE_AUTH_URL = os.getenv('GOOGLE_AUTH_URL')
+GOOGLE_TOKEN_URL = os.getenv('GOOGLE_TOKEN_URL')
+GOOGLE_USER_INFO_URL = os.getenv('GOOGLE_USER_INFO_URL')

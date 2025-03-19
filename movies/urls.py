@@ -19,6 +19,8 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     path('watchlist/', views.watchlist_view, name='watchlist'),
+    path('tubi/', views.tubi_movies, name='tubi_movies'),
+
 
     # Password Reset URLs
     path('password_reset/', 

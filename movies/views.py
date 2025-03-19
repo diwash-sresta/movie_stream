@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.shortcuts import render
 import json
+from .models import Profile, Movie, WatchlistItem
 
 import requests
 from requests.exceptions import RequestException
@@ -17,6 +18,8 @@ from urllib.parse import urlencode
 from django.contrib.auth.decorators import login_required 
 from movie_stream.forms import SignUpForm
 from django.contrib import messages
+from .models import  Profile
+from django.utils import timezone
 
 
 logger = logging.getLogger(__name__)
@@ -402,7 +405,7 @@ def login_view(request):
         else:
             messages.error(request, 'Invalid username or password.')
     
-    return render(request, 'movies/login.html')
+    return render(request, 'registration/login.html')
 
 def signup_view(request):
     if request.method == 'POST':
@@ -415,7 +418,7 @@ def signup_view(request):
     else:
         form = SignUpForm()
     
-    return render(request, 'movies/signup.html', {'form': form})
+    return render(request, 'registration/signup.html', {'form': form})
 
 @login_required
 def logout_view(request):
@@ -456,27 +459,29 @@ def profile_view(request):
 @login_required
 def watchlist_view(request):
     """View for displaying and managing user's watchlist"""
-    watchlist = request.session.get('watchlist', {})
-    watchlist_items = []
+    # Get the user's watchlist items from the database
+    watchlist_items = WatchlistItem.objects.filter(user=request.user)
     
-    for item_id, item_type in watchlist.items():
+    # Check if we need to fetch updated data from TMDB for any items
+    items_to_update = []
+    for item in watchlist_items:
+        # If the item is older than 7 days, we might want to update its details
+        if item.added_at < timezone.now() - timezone.timedelta(days=7):
+            items_to_update.append(item)
+    
+    # Update items if needed (this is optional and can be removed if not needed)
+    for item in items_to_update:
         try:
-            if item_type == 'movie':
-                data = get_tmdb_data(f'movie/{item_id}')
-                if data:
-                    data['media_type'] = 'movie'
-            else:
-                data = get_tmdb_data(f'tv/{item_id}')
-                if data:
-                    data['media_type'] = 'tv'
-                    # Ensure TV shows use 'name' as their title
-                    data['title'] = data.get('name')
-            
+            endpoint = f"movie/{item.item_id}" if item.media_type == 'movie' else f"tv/{item.item_id}"
+            data = get_tmdb_data(endpoint)
             if data:
-                watchlist_items.append(data)
-                
+                item.title = data.get('title') if item.media_type == 'movie' else data.get('name')
+                item.poster_path = data.get('poster_path')
+                item.vote_average = data.get('vote_average')
+                item.release_date = data.get('release_date') if item.media_type == 'movie' else data.get('first_air_date')
+                item.save()
         except Exception as e:
-            logger.error(f"Error fetching watchlist item {item_id}: {str(e)}")
+            logger.error(f"Error updating watchlist item {item.id}: {str(e)}")
     
     return render(request, 'movies/watchlist.html', {
         'watchlist_items': watchlist_items
@@ -490,13 +495,44 @@ def add_to_watchlist(request):
             item_id = data.get('item_id')
             media_type = data.get('media_type')
             
-            # Initialize watchlist in session if it doesn't exist
-            if 'watchlist' not in request.session:
-                request.session['watchlist'] = {}
+            # Check if the item already exists in the user's watchlist
+            existing_item = WatchlistItem.objects.filter(
+                user=request.user,
+                item_id=item_id,
+                media_type=media_type
+            ).first()
             
-            # Add item to watchlist
-            request.session['watchlist'][str(item_id)] = media_type
-            request.session.modified = True
+            if existing_item:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Item already in watchlist'
+                })
+            
+            # Fetch the item details from TMDB
+            endpoint = f"movie/{item_id}" if media_type == 'movie' else f"tv/{item_id}"
+            tmdb_data = get_tmdb_data(endpoint)
+            
+            if not tmdb_data:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Unable to fetch item details'
+                }, status=400)
+            
+            # Create a new watchlist item
+            title = tmdb_data.get('title') if media_type == 'movie' else tmdb_data.get('name')
+            poster_path = tmdb_data.get('poster_path')
+            vote_average = tmdb_data.get('vote_average')
+            release_date = tmdb_data.get('release_date') if media_type == 'movie' else tmdb_data.get('first_air_date')
+            
+            watchlist_item = WatchlistItem.objects.create(
+                user=request.user,
+                item_id=item_id,
+                media_type=media_type,
+                title=title,
+                poster_path=poster_path,
+                vote_average=vote_average,
+                release_date=release_date
+            )
             
             return JsonResponse({
                 'success': True,
@@ -516,17 +552,26 @@ def remove_from_watchlist(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            item_id = str(data.get('item_id'))
+            item_id = data.get('item_id')
+            media_type = data.get('media_type', None)
             
-            # Remove item from watchlist
-            if 'watchlist' in request.session and item_id in request.session['watchlist']:
-                del request.session['watchlist'][item_id]
-                request.session.modified = True
+            # Find and delete the watchlist item
+            query = {'user': request.user, 'item_id': item_id}
+            if media_type:
+                query['media_type'] = media_type
+                
+            deleted, _ = WatchlistItem.objects.filter(**query).delete()
             
-            return JsonResponse({
-                'success': True,
-                'message': 'Removed from watchlist'
-            })
+            if deleted:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Removed from watchlist'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Item not found in watchlist'
+                }, status=404)
             
         except Exception as e:
             return JsonResponse({
@@ -535,63 +580,71 @@ def remove_from_watchlist(request):
             }, status=400)
     
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
-# def google_login(request):
-#     """Redirect users to Google's OAuth consent screen."""
-#     params = {
-#         'client_id': settings.GOOGLE_CLIENT_ID,
-#         'redirect_uri': settings.GOOGLE_REDIRECT_URI,
-#         'response_type': 'code',
-#         'scope': 'openid email profile',
-#         'access_type': 'offline',
-#         'prompt': 'select_account',
-#     }
-#     auth_url = f"{settings.GOOGLE_AUTH_URL}?{urlencode(params)}"
-#     return redirect(auth_url)
 
-# def google_callback(request):
-#     """Handle the callback from Google OAuth."""
-#     code = request.GET.get('code')
-#     if not code:
-#         return redirect('login')  # Redirect to login if no code is provided
+from .tubi_scraper import get_tubi_movies
 
-#     # Exchange the authorization code for an access token
-#     token_data = {
-#         'code': code,
-#         'client_id': settings.GOOGLE_CLIENT_ID,
-#         'client_secret': settings.GOOGLE_CLIENT_SECRET,
-#         'redirect_uri': settings.GOOGLE_REDIRECT_URI,
-#         'grant_type': 'authorization_code',
-#     }
-#     response = requests.post(settings.GOOGLE_TOKEN_URL, data=token_data)
-#     if response.status_code != 200:
-#         return redirect('login')  # Handle error
+def tubi_movies(request):
+    """View to display free movies from Tubi TV"""
+    movies = get_tubi_movies()
+    return render(request, 'movies/tubi_movies.html', {'movies': movies})
 
-#     access_token = response.json().get('access_token')
+def google_login(request):
+    """Redirect users to Google's OAuth consent screen."""
+    params = {
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'access_type': 'offline',
+        'prompt': 'select_account',
+    }
+    auth_url = f"{settings.GOOGLE_AUTH_URL}?{urlencode(params)}"
+    return redirect(auth_url)
 
-#     # Fetch user info using the access token
-#     user_info_response = requests.get(settings.GOOGLE_USER_INFO_URL, headers={
-#         'Authorization': f'Bearer {access_token}'
-#     })
-#     if user_info_response.status_code != 200:
-#         return redirect('login')  # Handle error
+def google_callback(request):
+    """Handle the callback from Google OAuth."""
+    code = request.GET.get('code')
+    if not code:
+        return redirect('login')  # Redirect to login if no code is provided
 
-#     user_info = user_info_response.json()
-#     email = user_info.get('email')
-#     first_name = user_info.get('given_name', '')
-#     last_name = user_info.get('family_name', '')
-#     google_profile_picture = user_info.get('picture', '')  # Get the Google profile picture URL
+    # Exchange the authorization code for an access token
+    token_data = {
+        'code': code,
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'client_secret': settings.GOOGLE_CLIENT_SECRET,
+        'redirect_uri': settings.GOOGLE_REDIRECT_URI,
+        'grant_type': 'authorization_code',
+    }
+    response = requests.post(settings.GOOGLE_TOKEN_URL, data=token_data)
+    if response.status_code != 200:
+        return redirect('login')  # Handle error
 
-#     # Create or get the user
-#     user, created = User.objects.get_or_create(
-#         username=email,
-#         defaults={'email': email, 'first_name': first_name, 'last_name': last_name}
-#     )
+    access_token = response.json().get('access_token')
 
-#     # Update or create the user's profile with the Google profile picture
-#     profile, profile_created = Profile.objects.get_or_create(user=user)
-#     profile.google_profile_picture = google_profile_picture
-#     profile.save()
+    # Fetch user info using the access token
+    user_info_response = requests.get(settings.GOOGLE_USER_INFO_URL, headers={
+        'Authorization': f'Bearer {access_token}'
+    })
+    if user_info_response.status_code != 200:
+        return redirect('login')  # Handle error
 
-#     # Log the user in with the specified backend
-#     login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-#     return redirect('trackense:dashboard')
+    user_info = user_info_response.json()
+    email = user_info.get('email')
+    first_name = user_info.get('given_name', '')
+    last_name = user_info.get('family_name', '')
+    google_profile_picture = user_info.get('picture', '')  # Get the Google profile picture URL
+
+    # Create or get the user
+    user, created = User.objects.get_or_create(
+        username=email,
+        defaults={'email': email, 'first_name': first_name, 'last_name': last_name}
+    )
+
+    # Update or create the user's profile with the Google profile picture
+    profile, profile_created = Profile.objects.get_or_create(user=user)
+    profile.google_profile_picture = google_profile_picture
+    profile.save()
+
+    # Log the user in with the specified backend
+    login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+    return redirect('movies:home')

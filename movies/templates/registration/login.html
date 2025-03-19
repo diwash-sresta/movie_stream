@@ -21,6 +21,10 @@
                     </div>
                 {% endfor %}
             {% endif %}
+            <a href="{% url 'google_login' %}" class="w-full bg-red-600 text-white px-4 py-3 rounded-md hover:bg-red-700 transition flex justify-center items-center font-medium">
+                <img src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg" alt="Google" class="w-5 h-5 mr-2">
+                Login with Google
+            </a>
 
             <div>
                 <label for="username" class="block text-sm font-medium text-gray-300 mb-2">Username</label>
