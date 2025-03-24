@@ -22,6 +22,10 @@ from .models import  Profile
 from django.utils import timezone
 
 
+
+from .tubi_scraper import get_tubi_movies, get_movie_categories, search_tubi_movies
+
+
 logger = logging.getLogger(__name__)
 
 # Base TMDB API configuration
@@ -192,6 +196,8 @@ def movie_detail(request, movie_id):
     }
     
     return render(request, 'movies/movie_detail.html', context)
+
+
 
 def tv_shows_list(request):
     """View for TV shows listing page"""
@@ -581,12 +587,62 @@ def remove_from_watchlist(request):
     
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=405)
 
+@require_http_methods(["GET"])
+def get_tv_shows_api(request, list_type):
+    """API endpoint to fetch TV shows for front-end use"""
+    valid_types = ['popular', 'top_rated', 'on_the_air', 'airing_today']
+    
+    if list_type not in valid_types:
+        return JsonResponse({'error': 'Invalid list type'}, status=400)
+    
+    # Map the requested type to the appropriate TMDB endpoint
+    endpoint_map = {
+        'popular': 'tv/popular',
+        'top_rated': 'tv/top_rated',
+        'on_the_air': 'tv/on_the_air',
+        'airing_today': 'tv/airing_today'
+    }
+    
+    data = get_tmdb_data(endpoint_map[list_type])
+    
+    if not data:
+        return JsonResponse({'error': 'Failed to fetch data from TMDB'}, status=503)
+    
+    return JsonResponse(data)
+
 from .tubi_scraper import get_tubi_movies
 
 def tubi_movies(request):
-    """View to display free movies from Tubi TV"""
-    movies = get_tubi_movies()
-    return render(request, 'movies/tubi_movies.html', {'movies': movies})
+    """View to display free movies from Tubi TV with filtering and search capabilities"""
+    
+    # Get query parameters
+    category = request.GET.get('category', 'action')
+    search_query = request.GET.get('search', '')
+    limit = int(request.GET.get('limit', 20))
+    
+    # Get available categories
+    categories = get_movie_categories()
+    
+    # Handle search or category listing
+    if search_query:
+        movies = search_tubi_movies(search_query, limit=limit)
+        page_title = f'Search Results for "{search_query}"'
+    else:
+        movies = get_tubi_movies(category=category, limit=limit)
+        # Find the category name for display
+        category_name = next((cat['name'] for cat in categories if cat['id'] == category), category.capitalize())
+        page_title = f'Free {category_name} Movies on Tubi TV'
+    
+    context = {
+        'movies': movies,
+        'categories': categories,
+        'current_category': category,
+        'search_query': search_query,
+        'page_title': page_title,
+        'limit': limit
+    }
+    
+    return render(request, 'movies/tubi_movies.html', context)
 
 def google_login(request):
     """Redirect users to Google's OAuth consent screen."""
@@ -629,22 +685,36 @@ def google_callback(request):
         return redirect('login')  # Handle error
 
     user_info = user_info_response.json()
-    email = user_info.get('email')
+    google_email = user_info.get('email')
     first_name = user_info.get('given_name', '')
     last_name = user_info.get('family_name', '')
-    google_profile_picture = user_info.get('picture', '')  # Get the Google profile picture URL
-
-    # Create or get the user
-    user, created = User.objects.get_or_create(
-        username=email,
-        defaults={'email': email, 'first_name': first_name, 'last_name': last_name}
-    )
-
-    # Update or create the user's profile with the Google profile picture
-    profile, profile_created = Profile.objects.get_or_create(user=user)
+    google_profile_picture = user_info.get('picture', '')
+    
+    # Try to find a user with this email or with a profile linked to this Google account
+    user = None
+    try:
+        # First, try to find a profile with this Google email
+        profile = Profile.objects.get(google_email=google_email)
+        user = profile.user
+    except Profile.DoesNotExist:
+        # If no profile is found, try to find a user with this email
+        try:
+            user = User.objects.get(email=google_email)
+        except User.DoesNotExist:
+            # If no user is found, create a new one
+            user = User.objects.create(
+                username=google_email,  # Initially use email as username
+                email=google_email,
+                first_name=first_name,
+                last_name=last_name
+            )
+    
+    # Update or create the user's profile with Google information
+    profile, created = Profile.objects.get_or_create(user=user)
     profile.google_profile_picture = google_profile_picture
+    profile.google_email = google_email  # Store Google email separately
     profile.save()
 
-    # Log the user in with the specified backend
+    # Log the user in
     login(request, user, backend='django.contrib.auth.backends.ModelBackend')
     return redirect('movies:home')

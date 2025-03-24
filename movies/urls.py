@@ -20,6 +20,7 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('watchlist/', views.watchlist_view, name='watchlist'),
     path('tubi/', views.tubi_movies, name='tubi_movies'),
+    path('api/tv/<str:list_type>/', views.get_tv_shows_api, name='get_tv_shows_api'),
 
 
     # Password Reset URLs

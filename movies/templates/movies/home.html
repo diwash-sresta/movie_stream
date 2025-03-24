@@ -4,6 +4,52 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
+<!-- Enhanced Carousel Section -->
+<section class="relative mb-16 overflow-hidden">
+    <div id="featured-carousel" class="relative min-h-[500px] w-full bg-black">
+        <!-- Background image with overlay (will be populated by JS) -->
+        <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-10"></div>
+        <div id="featured-backdrop" class="absolute inset-0 w-full h-full bg-gray-900">
+            <!-- Backdrop image will be inserted here by JS -->
+        </div>
+        
+        <!-- Content positioned over the image -->
+        <div class="relative z-20 container mx-auto px-4 py-16 flex flex-col justify-end min-h-[500px]">
+            <h1 id="featured-title" class="text-4xl md:text-6xl font-bold mb-3 text-white"></h1>
+            
+            <div class="flex items-center mb-4 text-sm">
+                <span id="featured-year" class="text-gray-300 mr-3"></span>
+                <span id="featured-rating" class="bg-gray-800 text-white px-2 py-1 rounded mr-3"></span>
+                <span id="featured-duration" class="text-gray-300 mr-3"></span>
+                <span id="featured-genres" class="text-gray-300"></span>
+            </div>
+            
+            <p id="featured-overview" class="text-gray-300 max-w-2xl mb-6 line-clamp-3"></p>
+            
+            <div class="flex space-x-4 mb-4">
+                <a id="watch-now-btn" href="#" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md flex items-center">
+                    <i class="fas fa-play mr-2"></i>
+                    Watch Now
+                </a>
+                <button id="favorite-btn" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-md flex items-center">
+                    <i class="far fa-bookmark mr-2"></i>
+                    Favorite
+                </button>
+            </div>
+        </div>
+        
+        <!-- Navigation arrows -->
+        <div class="absolute bottom-8 right-8 z-30 flex space-x-3">
+            <button id="prev-slide" class="bg-black/50 hover:bg-black/80 text-white p-3 rounded-full focus:outline-none">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button id="next-slide" class="bg-black/50 hover:bg-black/80 text-white p-3 rounded-full focus:outline-none">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+    
+</section>
 <!-- Hero Section -->
 <section class="relative overflow-hidden rounded-xl mb-12">
     <div class="container mx-auto my-8 px-4">
@@ -13,30 +59,7 @@
         </div>
     </div>
 </section>
-<section class="mb-10" x-data="{ activeGenre: 'all' }" x-init="$watch('activeGenre', value => window.filterMoviesByGenre(value))">
-    <!-- Categories Tabs -->
-    <div class="flex space-x-2 overflow-x-auto pb-2 mb-6 scroll-smooth scrollbar-hide">
-        <template x-for="genre in [
-            {id: 'all', name: 'All'},
-            {id: '28', name: 'Action'},
-            {id: '35', name: 'Comedy'},
-            {id: '18', name: 'Drama'},
-            {id: '878', name: 'Sci-Fi'},
-            {id: '27', name: 'Horror'},
-            {id: '14', name: 'Fantasy'},
-            {id: '53', name: 'Thriller'}
-        ]" :key="genre.id">
-            <button 
-                @click="activeGenre = genre.id"
-                class="px-6 py-2 rounded-full whitespace-nowrap transition-colors"
-                :class="activeGenre === genre.id 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'">
-                <span x-text="genre.name"></span>
-            </button>
-        </template>
-    </div>
-</section>
+
 
 <!-- Trending Movies Section -->
 <section id="trending-section" class="mb-16">
@@ -45,7 +68,7 @@
             <i class="fas fa-fire text-red-500 mr-2"></i>
             Trending Movies
         </h2>
-        <a href="#" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
+        <a href="{% url 'movies:movies_list' %}?category=trending" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
             View All
             <i class="fas fa-chevron-right ml-1 text-xs"></i>
         </a>
@@ -94,7 +117,7 @@
             <i class="fas fa-thumbs-up text-blue-500 mr-2"></i>
             Popular Movies
         </h2>
-        <a href="#" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
+        <a href="{% url 'movies:movies_list' %}?category=popular" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
             View All
             <i class="fas fa-chevron-right ml-1 text-xs"></i>
         </a>
@@ -143,7 +166,7 @@
             <i class="fas fa-star text-yellow-500 mr-2"></i>
             Top Rated Movies
         </h2>
-        <a href="#" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
+        <a href="{% url 'movies:movies_list' %}?category=top_rated" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
             View All
             <i class="fas fa-chevron-right ml-1 text-xs"></i>
         </a>
@@ -192,7 +215,7 @@
             <i class="fas fa-calendar text-green-500 mr-2"></i>
             Coming Soon
         </h2>
-        <a href="#" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
+        <a href="{% url 'movies:movies_list' %}?category=upcoming" class="text-blue-400 hover:text-blue-300 flex items-center text-sm font-medium">
             View All
             <i class="fas fa-chevron-right ml-1 text-xs"></i>
         </a>
@@ -237,6 +260,116 @@
 
 {% block scripts %}
 <script>
+
+    // Add this to your existing script block in the home.html file
+
+// Carousel functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Access the existing movie data from your Django template context
+    let allMovies = JSON.parse(`{{ movies_json|escapejs }}`);
+    let featuredMovies = [];
+    
+    // Combine trending and popular movies for the featured carousel
+    if (allMovies && allMovies.trending && allMovies.trending.length > 0) {
+        // Get top 3 trending movies
+        featuredMovies = featuredMovies.concat(allMovies.trending.slice(0, 3));
+    }
+    
+    if (allMovies && allMovies.popular && allMovies.popular.length > 0) {
+        // Add top 2 popular movies that aren't already in featured
+        const popularToAdd = allMovies.popular.filter(popular => {
+            return !featuredMovies.some(featured => featured.id === popular.id);
+        }).slice(0, 2);
+        
+        featuredMovies = featuredMovies.concat(popularToAdd);
+    }
+    
+    // Fallback: If we still don't have enough, add some top rated
+    if (featuredMovies.length < 5 && allMovies && allMovies.top_rated && allMovies.top_rated.length > 0) {
+        const topRatedToAdd = allMovies.top_rated.filter(topRated => {
+            return !featuredMovies.some(featured => featured.id === topRated.id);
+        }).slice(0, 5 - featuredMovies.length);
+        
+        featuredMovies = featuredMovies.concat(topRatedToAdd);
+    }
+    
+    let currentFeaturedIndex = 0;
+    
+    // Function to update the featured movie in the carousel
+    function updateFeaturedMovie(index) {
+        if (!featuredMovies || featuredMovies.length === 0) return;
+        
+        const movie = featuredMovies[index];
+        
+        // Update backdrop image
+        const backdropElement = document.getElementById('featured-backdrop');
+        backdropElement.innerHTML = '';
+        if (movie.backdrop_path) {
+            backdropElement.innerHTML = `<img src="https://image.tmdb.org/t/p/original${movie.backdrop_path}" alt="${movie.title}" class="w-full h-full object-cover opacity-70">`;
+        }
+        
+        // Update text content
+        document.getElementById('featured-title').textContent = movie.title;
+        document.getElementById('featured-year').textContent = movie.release_date ? movie.release_date.slice(0, 4) : '';
+        document.getElementById('featured-rating').textContent = `${movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'} ★`;
+        
+        // Add runtime if available (may need to fetch this separately)
+        document.getElementById('featured-duration').textContent = movie.runtime ? `${movie.runtime} min` : '';
+        
+        // Add genres if available (may need to look up genre names from IDs)
+        if (movie.genre_ids && movie.genre_ids.length > 0) {
+            // This assumes you have a genres mapping available
+            // You might need to adjust this based on how you store genre information
+            const genreNames = movie.genre_ids.map(id => {
+                // Placeholder - you'll need to implement your own genre mapping
+                return id;
+            }).join(', ');
+            document.getElementById('featured-genres').textContent = genreNames;
+        } else {
+            document.getElementById('featured-genres').textContent = '';
+        }
+        
+        document.getElementById('featured-overview').textContent = movie.overview || '';
+        document.getElementById('watch-now-btn').href = `/movies/${movie.id}`;
+    }
+    
+    // Set initial featured movie
+    if (featuredMovies.length > 0) {
+        updateFeaturedMovie(0);
+    }
+    
+    // Previous slide button
+    document.getElementById('prev-slide').addEventListener('click', function() {
+        if (featuredMovies.length === 0) return;
+        currentFeaturedIndex = (currentFeaturedIndex - 1 + featuredMovies.length) % featuredMovies.length;
+        updateFeaturedMovie(currentFeaturedIndex);
+    });
+    
+    // Next slide button
+    document.getElementById('next-slide').addEventListener('click', function() {
+        if (featuredMovies.length === 0) return;
+        currentFeaturedIndex = (currentFeaturedIndex + 1) % featuredMovies.length;
+        updateFeaturedMovie(currentFeaturedIndex);
+    });
+    
+    // Auto-advance carousel every 7 seconds
+    const carouselInterval = setInterval(function() {
+        if (featuredMovies.length === 0) return;
+        currentFeaturedIndex = (currentFeaturedIndex + 1) % featuredMovies.length;
+        updateFeaturedMovie(currentFeaturedIndex);
+    }, 7000);
+    
+    // Toggle favorite button
+    document.getElementById('favorite-btn').addEventListener('click', function() {
+        const icon = this.querySelector('i');
+        if (icon.classList.contains('far')) {
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+        } else {
+            icon.classList.remove('fas');
+            icon.classList.add('far');
+        }
+    });
     // Initialize movie data
     let allMovies = JSON.parse(`{{ movies_json|escapejs }}`);
 

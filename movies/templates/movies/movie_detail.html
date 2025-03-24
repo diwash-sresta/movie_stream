@@ -132,12 +132,16 @@
             <section>
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold">Cast</h2>
-                    <a href="#" class="text-blue-400 hover:text-blue-300 text-sm">View All</a>
+                    <button id="view-all-cast" class="text-blue-400 hover:text-blue-300 text-sm transition-colors">
+                        View All
+                    </button>
+                    
                 </div>
                 
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {% for actor in movie.credits.cast|slice:":8" %}
-                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow">
+                    <div class="bg-gray-800 rounded-lg overflow-hidden shadow cast-item">
+                
                         <div class="aspect-[2/3] relative">
                             {% if actor.profile_path %}
                             <img src="https://image.tmdb.org/t/p/w185{{ actor.profile_path }}" 
@@ -223,12 +227,12 @@
                     </div>
                     {% endif %}
                     
-                    {% if movie.production_companies %}
+                    {% comment %} {% if movie.production_companies %}
                     <div>
                         <h4 class="text-gray-400 text-sm">Production</h4>
                         <p>{{ movie.production_companies|join:", " }}</p>
                     </div>
-                    {% endif %}
+                    {% endif %} {% endcomment %}
                 </div>
             </div>
             
@@ -407,6 +411,72 @@ document.addEventListener('DOMContentLoaded', function() {
         text.textContent = 'Added to List';
     {% endif %}
 });
+document.addEventListener('DOMContentLoaded', function() {
+    // "View All" functionality for cast
+    const viewAllCastBtn = document.querySelector('#view-all-cast');
+    if (viewAllCastBtn) {
+        viewAllCastBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Create a fullscreen modal
+            const modal = document.createElement('div');
+            modal.classList.add('fixed', 'inset-0', 'bg-gray-900/95', 'z-50', 'p-8', 'overflow-auto');
+            
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('max-w-7xl', 'mx-auto');
+            
+            // Header with close button
+            const header = document.createElement('div');
+            header.classList.add('flex', 'justify-between', 'items-center', 'mb-8');
+            
+            const title = document.createElement('h2');
+            title.classList.add('text-3xl', 'font-bold', 'text-white');
+            title.textContent = 'Full Cast';
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.classList.add('text-4xl', 'text-gray-400', 'hover:text-white', 'transition-colors');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = () => {
+                modal.remove();
+                document.body.style.overflow = '';
+            };
+            
+            header.appendChild(title);
+            header.appendChild(closeBtn);
+            modalContent.appendChild(header);
+            
+            // Create grid for cast
+            const grid = document.createElement('div');
+            grid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', 'gap-4');
+            
+            // Clone all cast items
+            document.querySelectorAll('.cast-item').forEach(item => {
+                const clone = item.cloneNode(true);
+                grid.appendChild(clone);
+            });
+
+            // Append grid to modal
+            modalContent.appendChild(grid);
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+            
+            // Close modal on ESC key
+            document.addEventListener('keydown', function escapeHandler(e) {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            });
+        });
+    }
+});
+
+
 </script>
 {% endif %}
 {% endblock %}
+
