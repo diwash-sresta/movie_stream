@@ -77,5 +77,5 @@ python manage.py collectstatic
 This project is licensed under the MIT License.
 
 ## Contact
-For any inquiries, reach out at [your-email@example.com](mailto:your-email@example.com).
+For any inquiries, reach out at diwashshrestha108@gmail.com
 
