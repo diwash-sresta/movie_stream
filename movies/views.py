@@ -164,6 +164,8 @@ def movies_list(request):
     
     return render(request, 'movies/movies_list.html', context)
 
+
+
 def movie_detail(request, movie_id):
     """View for movie detail page"""
     # Fetch basic movie details
@@ -338,7 +340,42 @@ def search(request):
             'results': [],
             'error_message': 'An error occurred while searching. Please try again.'
         })
+
+from django.http import JsonResponse
+
+@require_http_methods(["GET"])
+def search_suggestions(request):
+    """API endpoint to provide search suggestions for movies and TV shows."""
+    query = request.GET.get('q', '').strip()
     
+    if not query:
+        return JsonResponse([], safe=False)
+
+    # Search both movies and TV shows using TMDB API
+    search_results = get_tmdb_data('search/multi', {'query': query})
+
+    if not search_results or 'results' not in search_results:
+        return JsonResponse([], safe=False)
+
+    # Process results and format response
+    suggestions = []
+    for item in search_results['results']:
+        media_type = item.get('media_type', '')  # Either 'movie' or 'tv'
+        title = item.get('title') if media_type == 'movie' else item.get('name')
+        year = item.get('release_date', '')[:4] if media_type == 'movie' else item.get('first_air_date', '')[:4]
+        rating = item.get('vote_average', None)
+        poster_path = f"https://image.tmdb.org/t/p/w200{item['poster_path']}" if item.get('poster_path') else "/static/images/poster-placeholder.png"
+        
+        suggestions.append({
+            "title": title,
+            "year": year,
+            "type": "Movie" if media_type == "movie" else "TV Show",
+            "rating": rating,
+            "poster_path": poster_path
+        })
+
+    return JsonResponse(suggestions, safe=False)
+
 def similar_movies(request, movie_id):
     """View for displaying similar movies"""
     try:
@@ -418,7 +455,8 @@ def signup_view(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            # Explicitly specify the backend
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, 'Account created successfully!')
             return redirect('movies:home')
     else:
@@ -431,6 +469,7 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'You have been logged out.')
     return redirect('movies:home')
+
 @login_required
 def profile_view(request):
     """View for user profile page"""

@@ -16,136 +16,260 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Gradient animations */
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        /* Hover effects */
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+<body class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white min-h-screen flex flex-col">
     <!-- Navigation -->
-    <nav class="bg-gray-800/80 backdrop-blur-sm sticky top-0 z-50 shadow-lg border-b border-gray-700">
+    <nav class="bg-gray-800/90 backdrop-blur-md sticky top-0 z-50 shadow-xl border-b border-gray-700/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a class="flex items-center space-x-2" href="{% url 'movies:home' %}">
-                        <span class="text-blue-500">
+                    <a class="flex items-center space-x-3 group" href="{% url 'movies:home' %}">
+                        <span class="text-blue-500 group-hover:text-blue-400 transition-colors duration-300">
                             <i class="fas fa-film text-2xl"></i>
                         </span>
-                        <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent animate-gradient">
                             MovieStream
                         </span>
                     </a>
                     
                     <!-- Desktop Menu -->
-                    <div class="hidden md:ml-10 md:flex md:space-x-8">
-                        <a href="{% url 'movies:home' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700{% endif %}">Home</a>
-                        <a href="{% url 'movies:movies_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700{% endif %}">Movies</a>
-                        <a href="{% url 'movies:tv_shows_list' %}" class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700{% endif %}">TV Shows</a>
+                    <div class="hidden md:ml-10 md:flex md:space-x-6">
+                        <a href="{% url 'movies:home' %}" class="text-gray-300 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:bg-gray-700/50 {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700/70 shadow-inner{% endif %}">Home</a>
+                        <a href="{% url 'movies:movies_list' %}" class="text-gray-300 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:bg-gray-700/50 {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700/70 shadow-inner{% endif %}">Movies</a>
+                        <a href="{% url 'movies:tv_shows_list' %}" class="text-gray-300 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:bg-gray-700/50 {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700/70 shadow-inner{% endif %}">TV Shows</a>
                         {% if user.is_authenticated %}
                             <a href="{% url 'movies:watchlist' %}" 
-                               class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 
-                               {% if request.resolver_match.url_name == 'watchlist' %}text-white bg-gray-700{% endif %}">
-                                My List
+                               class="text-gray-300 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:bg-gray-700/50 
+                               {% if request.resolver_match.url_name == 'watchlist' %}text-white bg-gray-700/70 shadow-inner{% endif %}">
+                                <i class="fas fa-heart mr-1 text-xs"></i>My List
                             </a>
                         {% else %}
                             <a href="{% url 'movies:login' %}?next={% url 'movies:watchlist' %}" 
-                               class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                                My List
+                               class="text-gray-300 hover:text-white px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 hover:bg-gray-700/50">
+                                <i class="fas fa-heart mr-1 text-xs"></i>My List
                             </a>
                         {% endif %}
                     </div>
                 </div>
                 
                 <!-- Search Form -->
-                <div class="flex items-center">
-                    <form class="flex items-center" action="{% url 'movies:search' %}" method="GET">
-                        <div class="relative">
-                            <input 
-                                class="w-full md:w-64 rounded-full bg-gray-700/70 border border-gray-600 px-4 py-2 pl-10 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-200" 
-                                type="search" 
-                                name="q" 
-                                placeholder="Search movies, TV shows..."
-                                value="{{ request.GET.q|default:'' }}"
-                                required
-                            >
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-search text-gray-400"></i>
+<div class="flex items-center space-x-3">
+    <form class="flex items-center relative" action="{% url 'movies:search' %}" method="GET" x-data="{ 
+        query: '',
+        suggestions: [],
+        isLoading: false,
+        showSuggestions: false,
+
+        init() {
+            this.$watch('query', (value) => {
+                if (value.length < 2) {
+                    this.suggestions = [];
+                    this.showSuggestions = false;
+                    return;
+                }
+                this.fetchSuggestions();
+            })
+        },
+
+        fetchSuggestions() {
+            this.isLoading = true;
+            
+            fetch(`/api/search/suggestions?q=${encodeURIComponent(this.query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    this.suggestions = data.slice(0, 6); // Limit to 6 suggestions
+                    this.showSuggestions = this.suggestions.length > 0;
+                    this.isLoading = false;
+                })
+                .catch(error => {
+                    console.error('Error fetching suggestions:', error);
+                    this.isLoading = false;
+                });
+        },
+
+        selectSuggestion(suggestion) {
+            window.location.href = `/search?q=${encodeURIComponent(suggestion.title)}`;
+        }
+    }">
+        <div class="relative group w-full">
+            <input 
+                x-model="query"
+                x-ref="searchInput"
+                @focus="showSuggestions = suggestions.length > 0"
+                @click.away="showSuggestions = false"
+                class="w-full md:w-64 rounded-full bg-gray-700/60 border border-gray-600/60 px-4 py-2 pl-10 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all duration-300 group-hover:bg-gray-700/80" 
+                type="search" 
+                name="q" 
+                placeholder="Search movies, TV shows..."
+                value="{{ request.GET.q|default:'' }}"
+                autocomplete="off"
+            >
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i x-show="!isLoading" class="fas fa-search text-gray-400 group-hover:text-gray-300 transition-colors duration-300"></i>
+                <i x-show="isLoading" class="fas fa-spinner fa-spin text-gray-400"></i>
+            </div>
+            
+            <!-- Hanging Suggestions Dropdown -->
+            <div x-show="showSuggestions" 
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform -translate-y-2"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 transform translate-y-0"
+                x-transition:leave-end="opacity-0 transform -translate-y-2"
+                class="absolute z-50 top-full left-0 right-0 mt-1 bg-gray-800/95 backdrop-blur-md border border-gray-700/50 shadow-lg rounded-lg overflow-hidden">
+                
+                <div class="max-h-72 overflow-y-auto py-1">
+                    <template x-for="(suggestion, index) in suggestions" :key="index">
+                        <a @click="selectSuggestion(suggestion)"
+                            class="px-4 py-2 hover:bg-gray-700/70 cursor-pointer transition-colors duration-150 flex items-center">
+                            
+                            <!-- Show poster thumbnail if available -->
+                            <div class="flex-shrink-0 w-10 h-14 bg-gray-700 rounded overflow-hidden mr-3">
+                                <img x-bind:src="suggestion.poster_path" 
+                                    x-bind:alt="suggestion.title"
+                                    class="w-full h-full object-cover"
+                                    onerror="this.onerror=null; this.src='/static/images/poster-placeholder.png';">
                             </div>
-                        </div>
-                        <button class="ml-2 px-4 py-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 hidden md:block" type="submit">
-                            Search
-                        </button>
-                    </form>
+                            
+                            <div class="flex-1 min-w-0">
+                                <p class="text-white font-medium truncate" x-text="suggestion.title"></p>
+                                <div class="flex items-center text-xs text-gray-400">
+                                    <span x-text="suggestion.year || ''"></span>
+                                    <span x-show="suggestion.type" class="ml-2 px-1.5 py-0.5 rounded bg-gray-700 text-gray-300" x-text="suggestion.type"></span>
+                                </div>
+                            </div>
+                            
+                            <div x-show="suggestion.rating" class="flex-shrink-0 flex items-center space-x-1 text-yellow-500">
+                                <i class="fas fa-star text-xs"></i>
+                                <span class="text-xs font-medium" x-text="suggestion.rating"></span>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+
+                <!-- "No results" message -->
+                <div x-show="query.length >= 2 && suggestions.length === 0 && !isLoading" 
+                    class="px-4 py-3 text-sm text-gray-400 italic text-center">
+                    No matching titles found
+                </div>
+
+                <!-- View All Results Button -->
+                <a :href="`/search?q=${encodeURIComponent(query)}`"
+                    x-show="query.length >= 2"
+                    class="px-4 py-2 border-t border-gray-700/50 bg-blue-600 text-white text-center hover:bg-blue-500 cursor-pointer transition-colors duration-150 flex justify-center text-sm font-medium">
+                    View All Results
+                </a>
+            </div>
+        </div>
+
+        <button class="ml-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full hover:from-blue-500 hover:to-blue-600 transition-all duration-300 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 hidden md:block shadow-md hover:shadow-lg" type="submit">
+            Search
+        </button>
+    </form>
+</div>
+
                 
                     <!-- Mobile menu button -->
-                    <button type="button" class="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+                    <button type="button" class="md:hidden ml-2 p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white transition-all duration-200" x-data="{ mobileMenuOpen: false }" @click="mobileMenuOpen = !mobileMenuOpen; $nextTick(() => { document.getElementById('mobile-menu').classList.toggle('hidden'); })" aria-controls="mobile-menu" aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <i class="fas fa-bars"></i>
                     </button>
                     
                     <!-- User Menu (Optional) -->
-                    <div class="hidden md:flex md:items-center md:ml-4" x-data="{ profileOpen: false }">
-    {% if user.is_authenticated %}
-        <div class="relative">
-            <button @click="profileOpen = !profileOpen" class="flex items-center text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors duration-200">
-                <i class="fas fa-user text-xl"></i>
-                <span class="ml-2 text-sm">{{ user.username }}</span>
-                <i class="fas fa-chevron-down ml-1 text-xs"></i>
-            </button>
-            
-            <!-- Dropdown Menu -->
-            <div x-show="profileOpen" 
-                 @click.away="profileOpen = false"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 transform scale-95"
-                 x-transition:enter-end="opacity-100 transform scale-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 transform scale-100"
-                 x-transition:leave-end="opacity-0 transform scale-95"
-                 class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5">
-                <div class="py-1">
-                    <a href="{% url 'movies:profile' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
-                        <i class="fas fa-user-cog mr-2"></i>Profile Settings
-                    </a>
-                    <a href="{% url 'movies:watchlist' %}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
-                        <i class="fas fa-list mr-2"></i>My Watchlist
-                    </a>
-                    <hr class="border-gray-700 my-1">
-                    <form action="{% url 'movies:logout' %}" method="POST" class="block">
-                        {% csrf_token %}
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
-                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    {% else %}
-        <div class="relative">
-            <button @click="profileOpen = !profileOpen" 
-                    class="flex items-center text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700 transition-colors duration-200">
-                <i class="fas fa-user text-xl"></i>
-            </button>
-            
-            <!-- Login/Signup Dropdown -->
-            <div x-show="profileOpen" 
-                 @click.away="profileOpen = false"
-                 x-transition:enter="transition ease-out duration-200"
-                 x-transition:enter-start="opacity-0 transform scale-95"
-                 x-transition:enter-end="opacity-100 transform scale-100"
-                 x-transition:leave="transition ease-in duration-150"
-                 x-transition:leave-start="opacity-100 transform scale-100"
-                 x-transition:leave-end="opacity-0 transform scale-95"
-                 class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 py-1">
-                <a href="{% url 'movies:login' %}" 
-                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Login
-                </a>
-                <a href="{% url 'movies:signup' %}" 
-                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <i class="fas fa-user-plus mr-2"></i>Sign Up
-                </a>
-            </div>
-        </div>
-    {% endif %}
-</div>
+                    <div class="hidden md:flex md:items-center" x-data="{ profileOpen: false }">
+                        {% if user.is_authenticated %}
+                            <div class="relative">
+                                <button @click="profileOpen = !profileOpen" class="flex items-center text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700/70 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500">
+                                    <div class="w-8 h-8 flex items-center justify-center bg-gradient-to-br from-blue-500 to-blue-700 rounded-full shadow-md overflow-hidden">
+                                        <span class="font-bold text-white text-sm">{{ user.username.0|upper }}</span>
+                                    </div>
+                                </button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div x-show="profileOpen" 
+                                    @click.away="profileOpen = false"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 transform scale-95"
+                                    x-transition:enter-end="opacity-100 transform scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 transform scale-100"
+                                    x-transition:leave-end="opacity-0 transform scale-95"
+                                    class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-gray-800/95 backdrop-blur-sm ring-1 ring-black ring-opacity-5 border border-gray-700/50 overflow-hidden">
+                                    <div class="p-2">
+                                        <div class="px-3 py-2 border-b border-gray-700/50 mb-1">
+                                            <p class="text-xs text-gray-400">Signed in as</p>
+                                            <p class="text-sm font-medium text-white truncate">{{ user.username }}</p>
+                                        </div>
+                                        <a href="{% url 'movies:profile' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/70 hover:text-white rounded-md transition-colors duration-200">
+                                            <i class="fas fa-user-cog w-5 text-center mr-2 text-gray-400"></i>Profile Settings
+                                        </a>
+                                        <a href="{% url 'movies:watchlist' %}" class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/70 hover:text-white rounded-md transition-colors duration-200">
+                                            <i class="fas fa-list w-5 text-center mr-2 text-gray-400"></i>My Watchlist
+                                        </a>
+                                        <hr class="border-gray-700/50 my-1">
+                                        <form action="{% url 'movies:logout' %}" method="POST" class="block">
+                                            {% csrf_token %}
+                                            <button type="submit" class="w-full flex items-center text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/70 hover:text-white rounded-md transition-colors duration-200">
+                                                <i class="fas fa-sign-out-alt w-5 text-center mr-2 text-gray-400"></i>Logout
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="relative">
+                                <button @click="profileOpen = !profileOpen" 
+                                        class="flex items-center text-gray-300 hover:text-white p-2 rounded-full hover:bg-gray-700/70 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-blue-500">
+                                    <i class="fas fa-user text-xl"></i>
+                                </button>
+                                
+                                <!-- Login/Signup Dropdown -->
+                                <div x-show="profileOpen" 
+                                    @click.away="profileOpen = false"
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0 transform scale-95"
+                                    x-transition:enter-end="opacity-100 transform scale-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100 transform scale-100"
+                                    x-transition:leave-end="opacity-0 transform scale-95"
+                                    class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-gray-800/95 backdrop-blur-sm ring-1 ring-black ring-opacity-5 border border-gray-700/50 overflow-hidden">
+                                    <div class="p-2">
+                                        <a href="{% url 'movies:login' %}" 
+                                        class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/70 hover:text-white rounded-md transition-colors duration-200">
+                                            <i class="fas fa-sign-in-alt w-5 text-center mr-2 text-gray-400"></i>Login
+                                        </a>
+                                        <a href="{% url 'movies:signup' %}" 
+                                        class="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/70 hover:text-white rounded-md transition-colors duration-200">
+                                            <i class="fas fa-user-plus w-5 text-center mr-2 text-gray-400"></i>Sign Up
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -153,20 +277,44 @@
         <!-- Mobile Menu (Hidden by default) -->
         <div class="md:hidden hidden" id="mobile-menu">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="{% url 'movies:home' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700{% endif %}">Home</a>
-                <a href="{% url 'movies:movies_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700{% endif %}">Movies</a>
-                <a href="{% url 'movies:tv_shows_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700{% endif %}">TV Shows</a>
+                <a href="{% url 'movies:home' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200 {% if request.resolver_match.url_name == 'home' %}text-white bg-gray-700/70{% endif %}">
+                    <i class="fas fa-home mr-2 text-gray-400"></i>Home
+                </a>
+                <a href="{% url 'movies:movies_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200 {% if request.resolver_match.url_name == 'movies_list' %}text-white bg-gray-700/70{% endif %}">
+                    <i class="fas fa-film mr-2 text-gray-400"></i>Movies
+                </a>
+                <a href="{% url 'movies:tv_shows_list' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200 {% if request.resolver_match.url_name == 'tv_shows_list' %}text-white bg-gray-700/70{% endif %}">
+                    <i class="fas fa-tv mr-2 text-gray-400"></i>TV Shows
+                </a>
                 {% if user.is_authenticated %}
                     <a href="{% url 'movies:watchlist' %}" 
-                       class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium 
-                       {% if request.resolver_match.url_name == 'watchlist' %}text-white bg-gray-700{% endif %}">
-                        My List
+                    class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200 
+                    {% if request.resolver_match.url_name == 'watchlist' %}text-white bg-gray-700/70{% endif %}">
+                        <i class="fas fa-heart mr-2 text-gray-400"></i>My List
                     </a>
+                    <a href="{% url 'movies:profile' %}" 
+                    class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                        <i class="fas fa-user-cog mr-2 text-gray-400"></i>Profile
+                    </a>
+                    <form action="{% url 'movies:logout' %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                            <i class="fas fa-sign-out-alt mr-2 text-gray-400"></i>Logout
+                        </button>
+                    </form>
                 {% else %}
                     <a href="{% url 'movies:login' %}?next={% url 'movies:watchlist' %}" 
-                       class="block text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium">
-                        My List
+                    class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                        <i class="fas fa-heart mr-2 text-gray-400"></i>My List
                     </a>
+                    <div class="border-t border-gray-700/50 mt-2 pt-2">
+                        <a href="{% url 'movies:login' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                            <i class="fas fa-sign-in-alt mr-2 text-gray-400"></i>Login
+                        </a>
+                        <a href="{% url 'movies:signup' %}" class="block text-gray-300 hover:text-white hover:bg-gray-700/70 px-3 py-2 rounded-md text-base font-medium transition-all duration-200">
+                            <i class="fas fa-user-plus mr-2 text-gray-400"></i>Sign Up
+                        </a>
+                    </div>
                 {% endif %}
             </div>
         </div>
@@ -175,19 +323,52 @@
     <!-- Main Content -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {% if error_message %}
-        <div class="bg-red-500 text-white p-4 rounded-lg mb-6 shadow-lg">
+        <div class="bg-red-500/90 text-white p-4 rounded-lg mb-6 shadow-lg backdrop-blur-sm border border-red-600/50">
             <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <i class="fas fa-exclamation-circle"></i>
+                <div class="flex-shrink-0 text-red-200">
+                    <i class="fas fa-exclamation-circle text-lg"></i>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm">{{ error_message }}</p>
+                    <p class="text-sm font-medium">{{ error_message }}</p>
                 </div>
+                <button class="ml-auto text-red-200 hover:text-white transition-colors duration-200" onclick="this.parentElement.parentElement.style.display='none';">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
         </div>
         {% endif %}
         
         {% block content %}{% endblock %}
     </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800/50 backdrop-blur-sm border-t border-gray-700/50 py-8 mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <span class="text-blue-500 mr-2">
+                        <i class="fas fa-film text-xl"></i>
+                    </span>
+                    <span class="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                        MovieStream
+                    </span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fab fa-twitter text-lg"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fab fa-facebook text-lg"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-200">
+                        <i class="fab fa-instagram text-lg"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-4 text-center text-gray-400 text-sm">
+                <p>© 2025 MovieStream. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

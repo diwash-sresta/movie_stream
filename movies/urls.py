@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import search_suggestions
 
 app_name = 'movies'
 
@@ -21,6 +22,7 @@ urlpatterns = [
     path('watchlist/', views.watchlist_view, name='watchlist'),
     path('tubi/', views.tubi_movies, name='tubi_movies'),
     path('api/tv/<str:list_type>/', views.get_tv_shows_api, name='get_tv_shows_api'),
+    path('api/search/suggestions', search_suggestions, name='search_suggestions'),
 
 
     # Password Reset URLs

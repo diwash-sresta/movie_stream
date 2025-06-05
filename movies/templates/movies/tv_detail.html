@@ -107,6 +107,22 @@
             </div>
         </div>
     </div>
+    <!-- Share Modal -->
+        <div id="share-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+             <div class="absolute inset-0 bg-black/80" id="share-modal-overlay"></div>
+                 <div class="relative z-10 bg-gray-800 rounded-lg p-6 shadow-2xl max-w-md w-full">
+                    <h3 class="text-xl font-bold mb-4">Share</h3>
+                        <div class="flex items-center gap-2 mb-4">
+                            <input type="text" id="share-link" class="flex-1 p-2 bg-gray-700 rounded-md text-white" readonly value="{{ request.build_absolute_uri }}">
+                            <button id="copy-link-btn" class="p-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                            <button id="close-share-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+         </div>
     
     <!-- Details Section -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -373,205 +389,117 @@
         scrollbar-width: none;
     }
 </style>
-
-<!-- Enhanced JavaScript for interactive scrolling -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const viewAllCastBtn = document.querySelector('#view-all-cast');
-    
-        if (viewAllCastBtn) {
-            viewAllCastBtn.addEventListener('click', function(e) {
+        // Horizontal Scroll Functions
+        function setupHorizontalScroll(scrollContainer, prevBtn, nextBtn, innerContainer, itemWidth = 300) {
+            const container = document.querySelector(scrollContainer);
+            const prevButton = document.getElementById(prevBtn);
+            const nextButton = document.getElementById(nextBtn);
+            
+            if (!container || !prevButton || !nextButton) return;
+            
+            const scrollAmount = itemWidth + 16; // 16px is the gap size
+            
+            function updateScrollButtons() {
+                prevButton.disabled = container.scrollLeft <= 0;
+                const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 10;
+                nextButton.disabled = isAtEnd;
+                
+                prevButton.style.opacity = prevButton.disabled ? '0.5' : '1';
+                nextButton.style.opacity = nextButton.disabled ? '0.5' : '1';
+            }
+            
+            container.addEventListener('scroll', updateScrollButtons);
+            
+            prevButton.addEventListener('click', () => {
+                container.scrollLeft -= scrollAmount * 2;
+                updateScrollButtons();
+            });
+            
+            nextButton.addEventListener('click', () => {
+                container.scrollLeft += scrollAmount * 2;
+                updateScrollButtons();
+            });
+            
+            updateScrollButtons();
+        }
+        
+        // Setup horizontal scrolling for sections
+        setupHorizontalScroll('.seasons-scroll', 'seasons-prev', 'seasons-next', '.seasons-inner-container', 288);
+        setupHorizontalScroll('.cast-scroll', 'cast-prev', 'cast-next', '.cast-inner-container', 160);
+        setupHorizontalScroll('.similar-scroll', 'similar-prev', 'similar-next', '.similar-inner-container', 200);
+        
+        // View All Seasons Modal
+        const viewAllSeasonsBtn = document.getElementById('view-all-seasons');
+        if (viewAllSeasonsBtn) {
+            viewAllSeasonsBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Create the modal
                 const modal = document.createElement('div');
-                modal.setAttribute('id', 'cast-modal');
                 modal.classList.add('fixed', 'inset-0', 'bg-gray-900/95', 'z-50', 'p-8', 'overflow-auto');
-    
+                
                 const modalContent = document.createElement('div');
-                modalContent.classList.add('max-w-7xl', 'mx-auto', 'relative', 'bg-gray-800', 'p-6', 'rounded-lg', 'shadow-lg');
-    
-                // Header with Close Button
+                modalContent.classList.add('max-w-7xl', 'mx-auto');
+                
                 const header = document.createElement('div');
-                header.classList.add('flex', 'justify-between', 'items-center', 'mb-6');
-    
+                header.classList.add('flex', 'justify-between', 'items-center', 'mb-8');
+                
                 const title = document.createElement('h2');
                 title.classList.add('text-3xl', 'font-bold', 'text-white');
-                title.textContent = 'Full Cast';
-    
+                title.textContent = 'All Seasons';
+                
                 const closeBtn = document.createElement('button');
                 closeBtn.classList.add('text-4xl', 'text-gray-400', 'hover:text-white', 'transition-colors');
                 closeBtn.innerHTML = '&times;';
-                closeBtn.addEventListener('click', function() {
-                    modal.remove();
-                    document.body.style.overflow = ''; // Restore scrolling
+                
+                const grid = document.createElement('div');
+                grid.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4', 'gap-6');
+                
+                document.querySelectorAll('.season-item').forEach(item => {
+                    const clone = item.cloneNode(true);
+                    grid.appendChild(clone);
                 });
-    
+                
+                closeBtn.onclick = () => {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                };
+                
                 header.appendChild(title);
                 header.appendChild(closeBtn);
+                
                 modalContent.appendChild(header);
-    
-                // Create Grid for Cast
-                const grid = document.createElement('div');
-                grid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', 'gap-4');
-    
-                // Get all cast members
-                const castItems = document.querySelectorAll('.cast-item');
-                if (castItems.length === 0) {
-                    grid.innerHTML = "<p class='text-white'>No cast available.</p>";
-                } else {
-                    castItems.forEach(item => {
-                        const clone = item.cloneNode(true);
-                        grid.appendChild(clone);
-                    });
-                }
-    
                 modalContent.appendChild(grid);
+                
                 modal.appendChild(modalContent);
                 document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
-    
-                // Close modal on ESC key
-                document.addEventListener('keydown', function escapeHandler(e) {
+                document.body.style.overflow = 'hidden';
+                
+                // Escape key handler
+                function escapeHandler(e) {
                     if (e.key === 'Escape') {
                         modal.remove();
                         document.body.style.overflow = '';
                         document.removeEventListener('keydown', escapeHandler);
                     }
-                });
-            });
-        }
-    });
-    </script>
-    
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Netflix-Style Horizontal Scroll Functions
-    function setupHorizontalScroll(scrollContainer, prevBtn, nextBtn, innerContainer, itemWidth = 300) {
-        const container = document.querySelector(scrollContainer);
-        const prevButton = document.getElementById(prevBtn);
-        const nextButton = document.getElementById(nextBtn);
-        
-        if (!container || !prevButton || !nextButton) return;
-        
-        // Calculate scroll amount (based on item width + gap)
-        const scrollAmount = itemWidth + 16; // 16px is the gap size
-        
-        // Update button states initially
-        updateScrollButtons();
-        
-        // Set up scroll event listener to update button states
-        container.addEventListener('scroll', updateScrollButtons);
-        
-        // Scroll left button
-        prevButton.addEventListener('click', () => {
-            container.scrollLeft -= scrollAmount * 2; // Scroll 2 items
-            updateScrollButtons();
-        });
-        
-        // Scroll right button
-        nextButton.addEventListener('click', () => {
-            container.scrollLeft += scrollAmount * 2; // Scroll 2 items
-            updateScrollButtons();
-        });
-        
-        // Function to update button enabled/disabled states
-        function updateScrollButtons() {
-            // Check if scroll is at the beginning
-            prevButton.disabled = container.scrollLeft <= 0;
-            
-            // Check if scroll is at the end
-            const isAtEnd = container.scrollLeft + container.clientWidth >= container.scrollWidth - 10;
-            nextButton.disabled = isAtEnd;
-            
-            // Update visual appearance
-            prevButton.style.opacity = prevButton.disabled ? '0' : '';
-            nextButton.style.opacity = nextButton.disabled ? '0' : '';
-        }
-    }
-    
-    // Setup horizontal scrolling for all sections
-    setupHorizontalScroll('.seasons-scroll', 'seasons-prev', 'seasons-next', '.seasons-inner-container', 288); // 72rem width
-    setupHorizontalScroll('.cast-scroll', 'cast-prev', 'cast-next', '.cast-inner-container', 160); // 40rem width
-    setupHorizontalScroll('.similar-scroll', 'similar-prev', 'similar-next', '.similar-inner-container', 200);
-    
-    // "View All" functionality for seasons
-    const viewAllSeasonsBtn = document.getElementById('view-all-seasons');
-    if (viewAllSeasonsBtn) {
-        viewAllSeasonsBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const seasonsContainer = document.querySelector('.seasons-inner-container');
-            
-            // Create a fullscreen modal to display all seasons in a grid
-            const modal = document.createElement('div');
-            modal.classList.add('fixed', 'inset-0', 'bg-gray-900/95', 'z-50', 'p-8', 'overflow-auto');
-            
-            const modalContent = document.createElement('div');
-            modalContent.classList.add('max-w-7xl', 'mx-auto');
-            
-            // Header with close button
-            const header = document.createElement('div');
-            header.classList.add('flex', 'justify-between', 'items-center', 'mb-8');
-            
-            const title = document.createElement('h2');
-            title.classList.add('text-3xl', 'font-bold');
-            title.textContent = 'All Seasons';
-            
-            const closeBtn = document.createElement('button');
-            closeBtn.classList.add('text-4xl', 'text-gray-400', 'hover:text-white', 'transition-colors');
-            closeBtn.innerHTML = '&times;';
-            closeBtn.onclick = () => modal.remove();
-            
-            header.appendChild(title);
-            header.appendChild(closeBtn);
-            modalContent.appendChild(header);
-            
-            // Create grid for seasons
-            const grid = document.createElement('div');
-            grid.classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'xl:grid-cols-4', 'gap-6');
-            
-            // Clone all season items
-            const seasonItems = document.querySelectorAll('.season-item');
-            seasonItems.forEach(item => {
-                const clone = item.cloneNode(true);
-                grid.appendChild(clone);
-            });
-            
-            modalContent.appendChild(grid);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-            
-            // Prevent body scrolling
-            document.body.style.overflow = 'hidden';
-            
-            // Listen for escape key
-            document.addEventListener('keydown', function escapeHandler(e) {
-                if (e.key === 'Escape') {
-                    modal.remove();
-                    document.body.style.overflow = '';
-                    document.removeEventListener('keydown', escapeHandler);
                 }
+                document.addEventListener('keydown', escapeHandler);
             });
-        });
-    }
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        const viewAllCastBtn = document.querySelector('#view-all-cast');
-        const closeModalBtn = document.querySelector('#close-modal');
+        }
         
+        // View All Cast Modal
+        const viewAllCastBtn = document.getElementById('view-all-cast');
         if (viewAllCastBtn) {
             viewAllCastBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Create the modal
                 const modal = document.createElement('div');
-                modal.setAttribute('id', 'cast-modal');
                 modal.classList.add('fixed', 'inset-0', 'bg-gray-900/95', 'z-50', 'p-8', 'overflow-auto');
                 
                 const modalContent = document.createElement('div');
                 modalContent.classList.add('max-w-7xl', 'mx-auto', 'relative', 'bg-gray-800', 'p-6', 'rounded-lg', 'shadow-lg');
                 
-                // Header with Close Button
                 const header = document.createElement('div');
                 header.classList.add('flex', 'justify-between', 'items-center', 'mb-6');
                 
@@ -582,16 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const closeBtn = document.createElement('button');
                 closeBtn.classList.add('text-4xl', 'text-gray-400', 'hover:text-white', 'transition-colors');
                 closeBtn.innerHTML = '&times;';
-                closeBtn.addEventListener('click', function() {
-                    modal.remove();
-                    document.body.style.overflow = ''; // Restore scrolling
-                });
-    
-                header.appendChild(title);
-                header.appendChild(closeBtn);
-                modalContent.appendChild(header);
                 
-                // Create Grid for Cast
                 const grid = document.createElement('div');
                 grid.classList.add('grid', 'grid-cols-2', 'sm:grid-cols-3', 'md:grid-cols-4', 'lg:grid-cols-5', 'xl:grid-cols-6', 'gap-4');
                 
@@ -599,86 +518,138 @@ document.addEventListener('DOMContentLoaded', function() {
                     const clone = item.cloneNode(true);
                     grid.appendChild(clone);
                 });
-    
+                
+                closeBtn.addEventListener('click', function() {
+                    modal.remove();
+                    document.body.style.overflow = '';
+                });
+                
+                header.appendChild(title);
+                header.appendChild(closeBtn);
+                
+                modalContent.appendChild(header);
                 modalContent.appendChild(grid);
+                
                 modal.appendChild(modalContent);
                 document.body.appendChild(modal);
-                document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+                document.body.style.overflow = 'hidden';
                 
-                // Close modal when pressing ESC key
-                document.addEventListener('keydown', function escapeHandler(e) {
+                // Escape key handler
+                function escapeHandler(e) {
                     if (e.key === 'Escape') {
                         modal.remove();
                         document.body.style.overflow = '';
                         document.removeEventListener('keydown', escapeHandler);
                     }
-                });
+                }
+                document.addEventListener('keydown', escapeHandler);
             });
         }
-    });
-    
-
-function toggleWatchlist(itemId, mediaType) {
-    {% if user.is_authenticated %}
-        const button = document.getElementById('watchlist-button');
-        const icon = document.getElementById('watchlist-icon');
-        const text = document.getElementById('watchlist-text');
         
-        // Check if item is in watchlist
-        const isInWatchlist = button.classList.contains('in-watchlist');
-        const endpoint = isInWatchlist ? '/api/watchlist/remove/' : '/api/watchlist/add/';
-        
-        fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({
-                item_id: itemId,
-                media_type: mediaType
+        // Watchlist Functionality
+        function toggleWatchlist(itemId, mediaType) {
+            {% if user.is_authenticated %}
+            const button = document.getElementById('watchlist-button');
+            const icon = document.getElementById('watchlist-icon');
+            const text = document.getElementById('watchlist-text');
+            
+            const isInWatchlist = button.classList.contains('in-watchlist');
+            const endpoint = isInWatchlist ? '/api/watchlist/remove/' : '/api/watchlist/add/';
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    media_type: mediaType
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (isInWatchlist) {
-                    button.classList.remove('in-watchlist');
-                    button.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'border-blue-500');
-                    button.classList.add('bg-gray-800/80', 'hover:bg-gray-700', 'border-gray-700');
-                    icon.classList.remove('fa-check');
-                    icon.classList.add('fa-plus');
-                    text.textContent = 'Add to List';
-                } else {
-                    button.classList.add('in-watchlist');
-                    button.classList.remove('bg-gray-800/80', 'hover:bg-gray-700', 'border-gray-700');
-                    button.classList.add('bg-blue-600', 'hover:bg-blue-700', 'border-blue-500');
-                    icon.classList.remove('fa-plus');
-                    icon.classList.add('fa-check');
-                    text.textContent = 'Added to List';
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    button.classList.toggle('in-watchlist');
+                    button.classList.toggle('bg-blue-600');
+                    button.classList.toggle('hover:bg-blue-700');
+                    button.classList.toggle('border-blue-500');
+                    button.classList.toggle('bg-gray-800/80');
+                    button.classList.toggle('hover:bg-gray-700');
+                    button.classList.toggle('border-gray-700');
+                    
+                    icon.classList.toggle('fa-plus');
+                    icon.classList.toggle('fa-check');
+                    
+                    text.textContent = isInWatchlist ? 'Add to List' : 'Added to List';
                 }
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    {% else %}
-        window.location.href = "{% url 'movies:login' %}";
-    {% endif %}
-}
-
-// Check if show is in watchlist on page load
-document.addEventListener('DOMContentLoaded', function() {
-    {% if 'watchlist' in request.session and show.id|stringformat:"s" in request.session.watchlist %}
+            })
+            .catch(error => console.error('Error:', error));
+            {% else %}
+            window.location.href = "{% url 'movies:login' %}";
+            {% endif %}
+        }
+    
+        // Attach toggleWatchlist to global window object
+        window.toggleWatchlist = toggleWatchlist;
+    
+        // Initial watchlist state check
+        {% if 'watchlist' in request.session and show.id|stringformat:"s" in request.session.watchlist  %}
         const button = document.getElementById('watchlist-button');
         const icon = document.getElementById('watchlist-icon');
         const text = document.getElementById('watchlist-text');
         
-        button.classList.add('in-watchlist');
+        button.classList.add('in-watchlist', 'bg-blue-600', 'hover:bg-blue-700', 'border-blue-500');
         button.classList.remove('bg-gray-800/80', 'hover:bg-gray-700', 'border-gray-700');
-        button.classList.add('bg-blue-600', 'hover:bg-blue-700', 'border-blue-500');
         icon.classList.remove('fa-plus');
         icon.classList.add('fa-check');
         text.textContent = 'Added to List';
-    {% endif %}
-});
+        {% endif %}
+        
+        // Share Modal Functionality
+        const shareIcon = document.querySelector('.fa-share-alt')?.closest('button');
+        const shareModal = document.getElementById('share-modal');
+        const shareModalOverlay = document.getElementById('share-modal-overlay');
+        const closeShareModalBtn = document.getElementById('close-share-modal');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const shareLinkInput = document.getElementById('share-link');
+        
+        if (shareIcon) {
+            shareIcon.addEventListener('click', function() {
+                shareModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+        
+        if (closeShareModalBtn) {
+            closeShareModalBtn.addEventListener('click', function() {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        if (shareModalOverlay) {
+            shareModalOverlay.addEventListener('click', function() {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(shareLinkInput.value)
+                    .then(() => alert('Link copied to clipboard!'))
+                    .catch(err => console.error('Copy failed:', err));
+            });
+        }
+        
+        // Escape key for share modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && shareModal && !shareModal.classList.contains('hidden')) {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    });
 </script>
 {% endblock %}

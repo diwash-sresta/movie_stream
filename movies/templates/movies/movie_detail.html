@@ -289,6 +289,22 @@
         </button>
     </div>
 </div>
+<!-- Share Modal -->
+<div id="share-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/80" id="share-modal-overlay"></div>
+    <div class="relative z-10 bg-gray-800 rounded-lg p-6 shadow-2xl max-w-md w-full">
+        <h3 class="text-xl font-bold mb-4">Share</h3>
+        <div class="flex items-center gap-2 mb-4">
+            <input type="text" id="share-link" class="flex-1 p-2 bg-gray-700 rounded-md text-white" readonly value="{{ request.build_absolute_uri }}">
+            <button id="copy-link-btn" class="p-2 bg-blue-600 hover:bg-blue-700 rounded-md transition-colors">
+                <i class="fas fa-copy"></i>
+            </button>
+        </div>
+        <button id="close-share-modal" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -477,6 +493,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const shareIcon = document.querySelector('.fa-share-alt').closest('button');
+        const shareModal = document.getElementById('share-modal');
+        const shareModalOverlay = document.getElementById('share-modal-overlay');
+        const closeShareModalBtn = document.getElementById('close-share-modal');
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        const shareLinkInput = document.getElementById('share-link');
+    
+        if (shareIcon) {
+            shareIcon.addEventListener('click', function() {
+                shareModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        }
+    
+        if (closeShareModalBtn) {
+            closeShareModalBtn.addEventListener('click', function() {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+        }
+    
+        if (shareModalOverlay) {
+            shareModalOverlay.addEventListener('click', function() {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            });
+        }
+    
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', function() {
+                shareLinkInput.select();
+                document.execCommand('copy');
+                alert('Link copied to clipboard!');
+            });
+        }
+    
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !shareModal.classList.contains('hidden')) {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+</script>
+
+    
 {% endif %}
 {% endblock %}
 
